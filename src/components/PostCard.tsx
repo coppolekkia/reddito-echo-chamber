@@ -1,8 +1,12 @@
 
 import { ArrowUp, ArrowDown, MessageSquare, Share, Bookmark } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { useAuth } from "@/hooks/useAuth";
+import { useVote } from "@/hooks/usePosts";
+import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface PostCardProps {
   id: string;
@@ -11,49 +15,104 @@ interface PostCardProps {
   author: string;
   subreddit: string;
   upvotes: number;
+  downvotes: number;
   comments: number;
   timeAgo: string;
   imageUrl?: string;
 }
 
 export const PostCard = ({ 
+  id,
   title, 
   content, 
   author, 
   subreddit, 
   upvotes: initialUpvotes, 
+  downvotes: initialDownvotes,
   comments, 
   timeAgo,
   imageUrl 
 }: PostCardProps) => {
-  const [upvotes, setUpvotes] = useState(initialUpvotes);
-  const [voteState, setVoteState] = useState<'up' | 'down' | null>(null);
+  const { user } = useAuth();
+  const { vote, isVoting } = useVote();
+  const queryClient = useQueryClient();
+  const [userVote, setUserVote] = useState<'up' | 'down' | null>(null);
+  const [currentUpvotes, setCurrentUpvotes] = useState(initialUpvotes);
+  const [currentDownvotes, setCurrentDownvotes] = useState(initialDownvotes);
 
-  const handleUpvote = () => {
-    if (voteState === 'up') {
-      setUpvotes(upvotes - 1);
-      setVoteState(null);
-    } else if (voteState === 'down') {
-      setUpvotes(upvotes + 2);
-      setVoteState('up');
+  useEffect(() => {
+    if (user) {
+      // Check user's existing vote
+      const checkUserVote = async () => {
+        const { data } = await supabase
+          .from('votes')
+          .select('vote_type')
+          .eq('post_id', id)
+          .eq('user_id', user.id)
+          .single();
+        
+        if (data) {
+          setUserVote(data.vote_type as 'up' | 'down');
+        }
+      };
+      checkUserVote();
+    }
+  }, [id, user]);
+
+  useEffect(() => {
+    setCurrentUpvotes(initialUpvotes);
+    setCurrentDownvotes(initialDownvotes);
+  }, [initialUpvotes, initialDownvotes]);
+
+  const handleVote = async (voteType: 'up' | 'down') => {
+    if (!user || isVoting) return;
+
+    const oldVote = userVote;
+    const oldUpvotes = currentUpvotes;
+    const oldDownvotes = currentDownvotes;
+
+    // Optimistic update
+    if (oldVote === voteType) {
+      // Remove vote
+      setUserVote(null);
+      if (voteType === 'up') {
+        setCurrentUpvotes(oldUpvotes - 1);
+      } else {
+        setCurrentDownvotes(oldDownvotes - 1);
+      }
+    } else if (oldVote && oldVote !== voteType) {
+      // Change vote
+      setUserVote(voteType);
+      if (oldVote === 'up') {
+        setCurrentUpvotes(oldUpvotes - 1);
+        setCurrentDownvotes(oldDownvotes + 1);
+      } else {
+        setCurrentUpvotes(oldUpvotes + 1);
+        setCurrentDownvotes(oldDownvotes - 1);
+      }
     } else {
-      setUpvotes(upvotes + 1);
-      setVoteState('up');
+      // New vote
+      setUserVote(voteType);
+      if (voteType === 'up') {
+        setCurrentUpvotes(oldUpvotes + 1);
+      } else {
+        setCurrentDownvotes(oldDownvotes + 1);
+      }
+    }
+
+    try {
+      await vote(id, voteType, user.id);
+      // Refresh posts data
+      queryClient.invalidateQueries({ queryKey: ['posts'] });
+    } catch (error) {
+      // Revert optimistic update on error
+      setUserVote(oldVote);
+      setCurrentUpvotes(oldUpvotes);
+      setCurrentDownvotes(oldDownvotes);
     }
   };
 
-  const handleDownvote = () => {
-    if (voteState === 'down') {
-      setUpvotes(upvotes + 1);
-      setVoteState(null);
-    } else if (voteState === 'up') {
-      setUpvotes(upvotes - 2);
-      setVoteState('down');
-    } else {
-      setUpvotes(upvotes - 1);
-      setVoteState('down');
-    }
-  };
+  const totalScore = currentUpvotes - currentDownvotes;
 
   return (
     <Card className="mb-4 overflow-hidden hover:shadow-md transition-shadow duration-200">
@@ -63,19 +122,21 @@ export const PostCard = ({
           <Button
             variant="ghost"
             size="sm"
-            onClick={handleUpvote}
-            className={`p-1 h-8 w-8 ${voteState === 'up' ? 'text-orange-500 bg-orange-50' : 'text-gray-400 hover:text-orange-500'}`}
+            onClick={() => handleVote('up')}
+            disabled={!user || isVoting}
+            className={`p-1 h-8 w-8 ${userVote === 'up' ? 'text-orange-500 bg-orange-50' : 'text-gray-400 hover:text-orange-500'}`}
           >
             <ArrowUp className="h-4 w-4" />
           </Button>
-          <span className={`text-sm font-bold py-1 ${voteState === 'up' ? 'text-orange-500' : voteState === 'down' ? 'text-blue-500' : 'text-gray-600'}`}>
-            {upvotes}
+          <span className={`text-sm font-bold py-1 ${userVote === 'up' ? 'text-orange-500' : userVote === 'down' ? 'text-blue-500' : 'text-gray-600'}`}>
+            {totalScore}
           </span>
           <Button
             variant="ghost"
             size="sm"
-            onClick={handleDownvote}
-            className={`p-1 h-8 w-8 ${voteState === 'down' ? 'text-blue-500 bg-blue-50' : 'text-gray-400 hover:text-blue-500'}`}
+            onClick={() => handleVote('down')}
+            disabled={!user || isVoting}
+            className={`p-1 h-8 w-8 ${userVote === 'down' ? 'text-blue-500 bg-blue-50' : 'text-gray-400 hover:text-blue-500'}`}
           >
             <ArrowDown className="h-4 w-4" />
           </Button>
@@ -86,7 +147,7 @@ export const PostCard = ({
           <div className="flex items-center text-sm text-gray-500 mb-2">
             <span className="font-semibold text-gray-700">r/{subreddit}</span>
             <span className="mx-2">•</span>
-            <span>Posted by u/{author}</span>
+            <span>Postato da u/{author}</span>
             <span className="mx-2">•</span>
             <span>{timeAgo}</span>
           </div>
@@ -95,9 +156,11 @@ export const PostCard = ({
             {title}
           </h3>
           
-          <p className="text-gray-700 mb-3 line-clamp-3">
-            {content}
-          </p>
+          {content && (
+            <p className="text-gray-700 mb-3 line-clamp-3">
+              {content}
+            </p>
+          )}
 
           {imageUrl && (
             <img 
@@ -110,15 +173,15 @@ export const PostCard = ({
           <div className="flex items-center space-x-4 text-gray-500">
             <Button variant="ghost" size="sm" className="hover:bg-gray-100">
               <MessageSquare className="h-4 w-4 mr-1" />
-              {comments} Comments
+              {comments} Commenti
             </Button>
             <Button variant="ghost" size="sm" className="hover:bg-gray-100">
               <Share className="h-4 w-4 mr-1" />
-              Share
+              Condividi
             </Button>
             <Button variant="ghost" size="sm" className="hover:bg-gray-100">
               <Bookmark className="h-4 w-4 mr-1" />
-              Save
+              Salva
             </Button>
           </div>
         </div>
