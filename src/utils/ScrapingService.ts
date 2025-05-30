@@ -1,4 +1,3 @@
-
 interface ScrapedContent {
   title: string;
   description: string;
@@ -13,19 +12,30 @@ export class ScrapingService {
       // Validate URL
       new URL(url);
       
-      // Use a CORS proxy to fetch the content
-      const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+      // Use corsproxy.io as an alternative CORS proxy
+      const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
       
-      const response = await fetch(proxyUrl);
-      const data = await response.json();
+      const response = await fetch(proxyUrl, {
+        method: 'GET',
+        headers: {
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        },
+        timeout: 10000 // 10 second timeout
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       
-      if (!data.contents) {
+      const htmlContent = await response.text();
+      
+      if (!htmlContent) {
         return { success: false, error: 'Impossibile recuperare il contenuto' };
       }
       
       // Parse HTML content
       const parser = new DOMParser();
-      const doc = parser.parseFromString(data.contents, 'text/html');
+      const doc = parser.parseFromString(htmlContent, 'text/html');
       
       // Extract title
       let title = doc.querySelector('title')?.textContent || '';
@@ -71,7 +81,7 @@ export class ScrapingService {
       console.error('Error scraping URL:', error);
       return { 
         success: false, 
-        error: 'URL non valido o impossibile da raggiungere' 
+        error: error instanceof Error ? error.message : 'URL non valido o impossibile da raggiungere'
       };
     }
   }
