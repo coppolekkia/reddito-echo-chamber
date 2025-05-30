@@ -11,27 +11,6 @@ export const PostFeed = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  if (!user) {
-    return (
-      <div className="flex-1 max-w-2xl">
-        <div className="text-center py-12">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
-            Benvenuto su Reddit Clone
-          </h2>
-          <p className="text-gray-600 mb-6">
-            Accedi per vedere e interagire con i post
-          </p>
-          <Button 
-            onClick={() => navigate('/auth')}
-            className="bg-orange-500 hover:bg-orange-600"
-          >
-            Accedi
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
   if (isLoading) {
     return (
       <div className="flex-1 max-w-2xl">
@@ -54,7 +33,21 @@ export const PostFeed = () => {
 
   return (
     <div className="flex-1 max-w-2xl">
-      <CreatePost />
+      {user ? (
+        <CreatePost />
+      ) : (
+        <div className="mb-6 p-4 bg-white border border-gray-200 rounded-lg">
+          <p className="text-gray-600 text-center mb-3">
+            Accedi per creare un nuovo post
+          </p>
+          <Button 
+            onClick={() => navigate('/auth')}
+            className="w-full bg-orange-500 hover:bg-orange-600"
+          >
+            Accedi
+          </Button>
+        </div>
+      )}
       
       <div className="mb-6">
         <div className="flex items-center space-x-4 mb-4">
@@ -92,7 +85,15 @@ export const PostFeed = () => {
           ))
         ) : (
           <div className="text-center py-12">
-            <p className="text-gray-600">Nessun post disponibile. Crea il primo post!</p>
+            <p className="text-gray-600">Nessun post disponibile.</p>
+            {!user && (
+              <Button 
+                onClick={() => navigate('/auth')}
+                className="mt-4 bg-orange-500 hover:bg-orange-600"
+              >
+                Accedi per creare il primo post
+              </Button>
+            )}
           </div>
         )}
       </div>
