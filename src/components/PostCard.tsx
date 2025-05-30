@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useVote } from "@/hooks/usePosts";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 
 interface PostCardProps {
   id: string;
@@ -17,7 +18,7 @@ interface PostCardProps {
   downvotes: number;
   comments: number;
   timeAgo: string;
-  imageUrl?: string;
+  image_url?: string;
 }
 
 export const PostCard = ({ 
@@ -30,11 +31,12 @@ export const PostCard = ({
   downvotes: initialDownvotes,
   comments, 
   timeAgo,
-  imageUrl 
+  image_url 
 }: PostCardProps) => {
   const { user } = useAuth();
   const { vote, isVoting } = useVote();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [userVote, setUserVote] = useState<'up' | 'down' | null>(null);
   const [currentUpvotes, setCurrentUpvotes] = useState(initialUpvotes);
   const [currentDownvotes, setCurrentDownvotes] = useState(initialDownvotes);
@@ -151,7 +153,10 @@ export const PostCard = ({
             <span>{timeAgo}</span>
           </div>
           
-          <h3 className="text-lg font-semibold text-gray-900 mb-2 hover:text-blue-600 cursor-pointer">
+          <h3 
+            className="text-lg font-semibold text-gray-900 mb-2 hover:text-blue-600 cursor-pointer"
+            onClick={() => navigate(`/post/${id}`)}
+          >
             {title}
           </h3>
           
@@ -161,9 +166,9 @@ export const PostCard = ({
             </p>
           )}
 
-          {imageUrl && (
+          {image_url && (
             <img 
-              src={imageUrl} 
+              src={image_url} 
               alt="Post content" 
               className="w-full max-h-96 object-cover rounded-lg mb-3"
             />

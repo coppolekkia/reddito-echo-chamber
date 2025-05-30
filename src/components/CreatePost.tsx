@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,7 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
-import { Plus, Link, Loader2 } from 'lucide-react';
+import { Plus, Link, Loader2, ImagePlus, X } from 'lucide-react';
 import { ScrapingService } from '@/utils/ScrapingService';
 
 export const CreatePost = () => {
@@ -20,8 +19,35 @@ export const CreatePost = () => {
   const [subredditName, setSubredditName] = useState('reactjs');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isScraping, setIsScraping] = useState(false);
-  const [postType, setPostType] = useState<'text' | 'link'>('text');
+  const [postType, setPostType] = useState<'text' | 'link' | 'image'>('text');
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const queryClient = useQueryClient();
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        toast({
+          title: "Errore",
+          description: "L'immagine non può superare i 5MB",
+          variant: "destructive",
+        });
+        return;
+      }
+      setSelectedImage(file);
+      const preview = URL.createObjectURL(file);
+      setImagePreview(preview);
+    }
+  };
+
+  const removeImage = () => {
+    setSelectedImage(null);
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview);
+      setImagePreview(null);
+    }
+  };
 
   const handleScrapeUrl = async () => {
     if (!url.trim()) {
@@ -63,6 +89,29 @@ export const CreatePost = () => {
     }
   };
 
+  const uploadImage = async (file: File): Promise<string | null> => {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError, data } = await supabase.storage
+        .from('post-images')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('post-images')
+        .getPublicUrl(filePath);
+
+      return publicUrl;
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      return null;
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
@@ -85,6 +134,19 @@ export const CreatePost = () => {
         return;
       }
 
+      let imageUrl = null;
+      if (postType === 'image' && selectedImage) {
+        imageUrl = await uploadImage(selectedImage);
+        if (!imageUrl) {
+          toast({
+            title: "Errore",
+            description: "Impossibile caricare l'immagine",
+            variant: "destructive",
+          });
+          return;
+        }
+      }
+
       // Prepare content based on post type
       let postContent = content;
       if (postType === 'link' && url) {
@@ -98,6 +160,7 @@ export const CreatePost = () => {
           content: postContent || null,
           author_id: user.id,
           subreddit_id: subreddit.id,
+          image_url: imageUrl,
         });
 
       if (error) {
@@ -116,6 +179,7 @@ export const CreatePost = () => {
         setUrl('');
         setIsOpen(false);
         setPostType('text');
+        removeImage();
         queryClient.invalidateQueries({ queryKey: ['posts'] });
       }
     } catch (error) {
@@ -186,6 +250,15 @@ export const CreatePost = () => {
                   <Link className="h-4 w-4 mr-2" />
                   Link
                 </Button>
+                <Button
+                  type="button"
+                  variant={postType === 'image' ? 'default' : 'outline'}
+                  onClick={() => setPostType('image')}
+                  className="flex-1"
+                >
+                  <ImagePlus className="h-4 w-4 mr-2" />
+                  Immagine
+                </Button>
               </div>
             </div>
 
@@ -215,6 +288,53 @@ export const CreatePost = () => {
                     )}
                   </Button>
                 </div>
+              </div>
+            )}
+
+            {postType === 'image' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Immagine
+                </label>
+                {!imagePreview ? (
+                  <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                    <div className="space-y-1 text-center">
+                      <ImagePlus className="mx-auto h-12 w-12 text-gray-400" />
+                      <div className="flex text-sm text-gray-600">
+                        <label className="relative cursor-pointer bg-white rounded-md font-medium text-orange-600 hover:text-orange-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-orange-500">
+                          <span>Carica un file</span>
+                          <input
+                            type="file"
+                            className="sr-only"
+                            accept="image/*"
+                            onChange={handleImageSelect}
+                          />
+                        </label>
+                        <p className="pl-1">o trascina e rilascia</p>
+                      </div>
+                      <p className="text-xs text-gray-500">
+                        PNG, JPG, GIF fino a 5MB
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="relative">
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="mt-2 max-h-96 rounded-lg"
+                    />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      className="absolute top-2 right-2"
+                      onClick={removeImage}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
             
@@ -253,6 +373,7 @@ export const CreatePost = () => {
                   setContent('');
                   setUrl('');
                   setPostType('text');
+                  removeImage();
                 }}
               >
                 Annulla
