@@ -1,4 +1,3 @@
-
 import { ArrowUp, ArrowDown, MessageSquare, Share, Bookmark } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -49,7 +48,7 @@ export const PostCard = ({
           .select('vote_type')
           .eq('post_id', id)
           .eq('user_id', user.id)
-          .single();
+          .maybeSingle();
         
         if (data) {
           setUserVote(data.vote_type as 'up' | 'down');
