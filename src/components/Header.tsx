@@ -1,5 +1,5 @@
 
-import { Search, User, Bell, MessageSquare, Plus, LogOut, Shield } from "lucide-react";
+import { Search, User, Bell, MessageSquare, Plus, LogOut, Shield, Settings } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -61,9 +61,24 @@ export const Header = () => {
                   <User className="h-5 w-5" />
                 </Button>
                 {isAdmin && (
-                  <Button variant="ghost" size="sm" title="Amministratore">
-                    <Shield className="h-5 w-5 text-red-500" />
-                  </Button>
+                  <>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      title="Amministratore"
+                      onClick={() => navigate('/admin')}
+                    >
+                      <Shield className="h-5 w-5 text-red-500" />
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      title="Pannello Admin"
+                      onClick={() => navigate('/admin')}
+                    >
+                      <Settings className="h-5 w-5" />
+                    </Button>
+                  </>
                 )}
                 <Button 
                   variant="ghost" 
