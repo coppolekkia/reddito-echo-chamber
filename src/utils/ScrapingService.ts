@@ -12,8 +12,8 @@ export class ScrapingService {
       // Validate URL
       new URL(url);
       
-      // Use corsproxy.io as an alternative CORS proxy
-      const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+      // Use allorigins.win as the CORS proxy
+      const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
       
       const response = await fetch(proxyUrl, {
         method: 'GET',
