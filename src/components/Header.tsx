@@ -1,12 +1,14 @@
 
-import { Search, User, Bell, MessageSquare, Plus, LogOut } from "lucide-react";
+import { Search, User, Bell, MessageSquare, Plus, LogOut, Shield } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserRole } from "@/hooks/useUserRole";
 import { useNavigate } from "react-router-dom";
 
 export const Header = () => {
   const { user, signOut } = useAuth();
+  const { isAdmin } = useUserRole();
   const navigate = useNavigate();
 
   const handleAuthAction = () => {
@@ -58,6 +60,11 @@ export const Header = () => {
                 <Button variant="ghost" size="sm">
                   <User className="h-5 w-5" />
                 </Button>
+                {isAdmin && (
+                  <Button variant="ghost" size="sm" title="Amministratore">
+                    <Shield className="h-5 w-5 text-red-500" />
+                  </Button>
+                )}
                 <Button 
                   variant="ghost" 
                   size="sm"

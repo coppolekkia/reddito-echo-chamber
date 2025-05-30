@@ -22,10 +22,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
+
+        // Assign default user role for new signups
+        if (event === 'SIGNED_UP' && session?.user) {
+          setTimeout(async () => {
+            try {
+              await supabase
+                .from('user_roles')
+                .insert({
+                  user_id: session.user.id,
+                  role: 'user'
+                });
+            } catch (error) {
+              console.error('Error assigning user role:', error);
+            }
+          }, 0);
+        }
       }
     );
 
