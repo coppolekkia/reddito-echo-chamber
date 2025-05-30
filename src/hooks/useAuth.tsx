@@ -28,15 +28,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setLoading(false);
 
         // Assign default user role for new signups
-        if (event === 'SIGNED_UP' && session?.user) {
+        if (event === 'SIGNED_IN' && session?.user) {
           setTimeout(async () => {
             try {
-              await supabase
+              // Check if user already has a role
+              const { data: existingRole } = await supabase
                 .from('user_roles')
-                .insert({
-                  user_id: session.user.id,
-                  role: 'user'
-                });
+                .select('id')
+                .eq('user_id', session.user.id)
+                .single();
+
+              // Only assign role if user doesn't have one
+              if (!existingRole) {
+                await supabase
+                  .from('user_roles')
+                  .insert({
+                    user_id: session.user.id,
+                    role: 'user'
+                  });
+              }
             } catch (error) {
               console.error('Error assigning user role:', error);
             }
