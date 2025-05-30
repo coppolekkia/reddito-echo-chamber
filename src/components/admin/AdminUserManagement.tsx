@@ -14,7 +14,7 @@ interface UserWithRole {
   id: string;
   username: string;
   created_at: string;
-  user_roles: { role: string }[];
+  role?: string;
 }
 
 export const AdminUserManagement = () => {
@@ -25,18 +25,31 @@ export const AdminUserManagement = () => {
   const { data: users, isLoading } = useQuery({
     queryKey: ['admin-users'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // First get all profiles
+      const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select(`
-          id,
-          username,
-          created_at,
-          user_roles (role)
-        `)
+        .select('id, username, created_at')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      return data as UserWithRole[];
+      if (profilesError) throw profilesError;
+
+      // Then get all user roles
+      const { data: userRoles, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('user_id, role');
+
+      if (rolesError) throw rolesError;
+
+      // Combine the data
+      const usersWithRoles = profiles?.map(profile => {
+        const userRole = userRoles?.find(role => role.user_id === profile.id);
+        return {
+          ...profile,
+          role: userRole?.role || 'user'
+        };
+      }) || [];
+
+      return usersWithRoles as UserWithRole[];
     },
   });
 
@@ -54,7 +67,7 @@ export const AdminUserManagement = () => {
         .from('user_roles')
         .insert({
           user_id: userId,
-          role: newRole
+          role: newRole as 'admin' | 'moderator' | 'user'
         });
 
       if (error) throw error;
@@ -91,11 +104,11 @@ export const AdminUserManagement = () => {
   const getRoleBadgeVariant = (role: string) => {
     switch (role) {
       case 'admin':
-        return 'destructive';
+        return 'destructive' as const;
       case 'moderator':
-        return 'secondary';
+        return 'secondary' as const;
       default:
-        return 'outline';
+        return 'outline' as const;
     }
   };
 
@@ -137,7 +150,7 @@ export const AdminUserManagement = () => {
           </TableHeader>
           <TableBody>
             {users?.map((user) => {
-              const currentRole = user.user_roles?.[0]?.role || 'user';
+              const currentRole = user.role || 'user';
               return (
                 <TableRow key={user.id}>
                   <TableCell className="font-medium">
