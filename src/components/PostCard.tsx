@@ -7,6 +7,7 @@ import { useVote } from "@/hooks/usePosts";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 interface PostCardProps {
   id: string;
@@ -113,6 +114,28 @@ export const PostCard = ({
     }
   };
 
+  const handleShare = async () => {
+    const postUrl = `${window.location.origin}/post/${id}`;
+    
+    try {
+      if (navigator.share) {
+        // Use native share API if available (mobile devices)
+        await navigator.share({
+          title: title,
+          text: `Guarda questo post: ${title}`,
+          url: postUrl,
+        });
+      } else {
+        // Fallback to clipboard API
+        await navigator.clipboard.writeText(postUrl);
+        toast.success("Link copiato negli appunti!");
+      }
+    } catch (error) {
+      console.error('Error sharing:', error);
+      toast.error("Errore durante la condivisione");
+    }
+  };
+
   const totalScore = currentUpvotes - currentDownvotes;
 
   return (
@@ -179,7 +202,7 @@ export const PostCard = ({
               <MessageSquare className="h-4 w-4 mr-1" />
               {comments} Commenti
             </Button>
-            <Button variant="ghost" size="sm" className="hover:bg-gray-100">
+            <Button variant="ghost" size="sm" className="hover:bg-gray-100" onClick={handleShare}>
               <Share className="h-4 w-4 mr-1" />
               Condividi
             </Button>
