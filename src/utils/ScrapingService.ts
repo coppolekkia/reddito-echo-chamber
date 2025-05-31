@@ -7,6 +7,8 @@ interface ScrapingResult {
   content?: string;
   image?: string;
   url?: string;
+  siteName?: string;
+  author?: string;
 }
 
 interface ScrapingResponse {
@@ -28,6 +30,8 @@ export class ScrapingService {
         };
       }
 
+      console.log('Calling scrape function for URL:', url);
+
       const { data, error } = await supabase.functions.invoke('scrape-url', {
         body: { url }
       });
@@ -40,6 +44,7 @@ export class ScrapingService {
         };
       }
 
+      console.log('Scraping result:', data);
       return data;
     } catch (error) {
       console.error('Scraping service error:', error);

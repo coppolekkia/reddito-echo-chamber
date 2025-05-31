@@ -65,7 +65,23 @@ export const CreatePost = () => {
       
       if (result.success && result.data) {
         setTitle(result.data.title || '');
-        setContent(result.data.description || result.data.content || '');
+        const contentParts = [];
+        
+        if (result.data.description) {
+          contentParts.push(result.data.description);
+        } else if (result.data.content) {
+          contentParts.push(result.data.content);
+        }
+        
+        if (result.data.siteName) {
+          contentParts.push(`\nFonte: ${result.data.siteName}`);
+        }
+        
+        if (result.data.author) {
+          contentParts.push(`Autore: ${result.data.author}`);
+        }
+        
+        setContent(contentParts.join('\n'));
         
         toast({
           title: "Contenuto recuperato!",
@@ -135,6 +151,8 @@ export const CreatePost = () => {
       }
 
       let imageUrl = null;
+      
+      // Handle image upload for image posts
       if (postType === 'image' && selectedImage) {
         imageUrl = await uploadImage(selectedImage);
         if (!imageUrl) {
@@ -144,6 +162,18 @@ export const CreatePost = () => {
             variant: "destructive",
           });
           return;
+        }
+      }
+      
+      // For link posts, try to use the scraped image if no manual image was uploaded
+      if (postType === 'link' && !imageUrl && url) {
+        try {
+          const scrapingResult = await ScrapingService.scrapeUrl(url);
+          if (scrapingResult.success && scrapingResult.data?.image) {
+            imageUrl = scrapingResult.data.image;
+          }
+        } catch (error) {
+          console.log('Could not get image from scraped content:', error);
         }
       }
 
