@@ -184,17 +184,23 @@ export const PostCard = ({
           </h3>
           
           {content && (
-            <p className="text-gray-700 mb-3 line-clamp-3">
+            <div className="text-gray-700 mb-3 whitespace-pre-wrap break-words">
               {content}
-            </p>
+            </div>
           )}
 
           {image_url && (
-            <img 
-              src={image_url} 
-              alt="Post content" 
-              className="w-full max-h-96 object-cover rounded-lg mb-3"
-            />
+            <div className="mb-3">
+              <img 
+                src={image_url} 
+                alt="Post content" 
+                className="w-full max-h-[500px] object-contain rounded-lg border border-gray-200"
+                onError={(e) => {
+                  console.error('Error loading image:', image_url);
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
+            </div>
           )}
 
           <div className="flex items-center space-x-4 text-gray-500">
