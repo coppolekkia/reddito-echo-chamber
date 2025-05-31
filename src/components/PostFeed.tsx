@@ -1,4 +1,3 @@
-
 import { PostCard } from "./PostCard";
 import { CreatePost } from "./CreatePost";
 import { usePosts } from "@/hooks/usePosts";
@@ -80,7 +79,7 @@ export const PostFeed = () => {
               downvotes={post.downvotes}
               comments={0} // TODO: Add comment count
               timeAgo={new Date(post.created_at).toLocaleString('it-IT')}
-              imageUrl={post.image_url || undefined}
+              image_url={post.image_url || undefined}
             />
           ))
         ) : (
