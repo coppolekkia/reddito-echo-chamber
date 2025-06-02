@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface PostCardProps {
   id: string;
@@ -38,6 +39,7 @@ export const PostCard = ({
   const { vote, isVoting } = useVote();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [userVote, setUserVote] = useState<'up' | 'down' | null>(null);
   const [currentUpvotes, setCurrentUpvotes] = useState(initialUpvotes);
   const [currentDownvotes, setCurrentDownvotes] = useState(initialDownvotes);
@@ -119,14 +121,12 @@ export const PostCard = ({
     
     try {
       if (navigator.share) {
-        // Use native share API if available (mobile devices)
         await navigator.share({
           title: title,
           text: `Guarda questo post: ${title}`,
           url: postUrl,
         });
       } else {
-        // Fallback to clipboard API
         await navigator.clipboard.writeText(postUrl);
         toast.success("Link copiato negli appunti!");
       }
@@ -138,6 +138,98 @@ export const PostCard = ({
 
   const totalScore = currentUpvotes - currentDownvotes;
 
+  if (isMobile) {
+    return (
+      <Card className="mb-3 overflow-hidden hover:shadow-md transition-shadow duration-200 mx-2">
+        {/* Header del post */}
+        <div className="p-3 pb-2">
+          <div className="flex items-center text-xs text-gray-500 mb-2 flex-wrap">
+            <span className="font-semibold text-gray-700">r/{subreddit}</span>
+            <span className="mx-1">•</span>
+            <span>u/{author}</span>
+            <span className="mx-1">•</span>
+            <span>{timeAgo}</span>
+          </div>
+          
+          <h3 
+            className="text-base font-semibold text-gray-900 mb-2 hover:text-blue-600 cursor-pointer leading-tight"
+            onClick={() => navigate(`/post/${id}`)}
+          >
+            {title}
+          </h3>
+        </div>
+
+        {/* Contenuto */}
+        {content && (
+          <div className="px-3 pb-2">
+            <div className="text-sm text-gray-700 whitespace-pre-wrap break-words line-clamp-4">
+              {content}
+            </div>
+          </div>
+        )}
+
+        {/* Immagine */}
+        {image_url && (
+          <div className="px-3 pb-2">
+            <img 
+              src={image_url} 
+              alt="Post content" 
+              className="w-full max-h-64 object-cover rounded-lg border border-gray-200"
+              onError={(e) => {
+                console.error('Error loading image:', image_url);
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+          </div>
+        )}
+
+        {/* Azioni */}
+        <div className="flex items-center justify-between px-3 py-2 bg-gray-50 border-t">
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleVote('up')}
+                disabled={!user || isVoting}
+                className={`p-1 h-8 w-8 ${userVote === 'up' ? 'text-orange-500 bg-orange-50' : 'text-gray-400'}`}
+              >
+                <ArrowUp className="h-4 w-4" />
+              </Button>
+              <span className={`text-sm font-bold ${userVote === 'up' ? 'text-orange-500' : userVote === 'down' ? 'text-blue-500' : 'text-gray-600'}`}>
+                {totalScore}
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleVote('down')}
+                disabled={!user || isVoting}
+                className={`p-1 h-8 w-8 ${userVote === 'down' ? 'text-blue-500 bg-blue-50' : 'text-gray-400'}`}
+              >
+                <ArrowDown className="h-4 w-4" />
+              </Button>
+            </div>
+            
+            <Button variant="ghost" size="sm" className="p-1 h-8">
+              <MessageSquare className="h-4 w-4" />
+              <span className="ml-1 text-xs">{comments}</span>
+            </Button>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <Button variant="ghost" size="sm" className="p-1 h-8" onClick={handleShare}>
+              <Share className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="sm" className="p-1 h-8">
+              <Bookmark className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      </Card>
+    );
+  }
+
+  // Layout desktop originale
   return (
     <Card className="mb-4 overflow-hidden hover:shadow-md transition-shadow duration-200">
       <div className="flex">
