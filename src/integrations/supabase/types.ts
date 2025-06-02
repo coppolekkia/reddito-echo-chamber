@@ -139,23 +139,34 @@ export type Database = {
       subreddits: {
         Row: {
           created_at: string
+          creator_id: string | null
           description: string | null
           id: string
           name: string
         }
         Insert: {
           created_at?: string
+          creator_id?: string | null
           description?: string | null
           id?: string
           name: string
         }
         Update: {
           created_at?: string
+          creator_id?: string | null
           description?: string | null
           id?: string
           name?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "subreddits_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {

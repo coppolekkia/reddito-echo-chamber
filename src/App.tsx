@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Create from "./pages/Create";
 import SinglePost from "./pages/SinglePost";
+import CreateCommunityPage from "./pages/CreateCommunity";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 
@@ -25,6 +26,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/create" element={<Create />} />
+            <Route path="/create-community" element={<CreateCommunityPage />} />
             <Route path="/post/:id" element={<SinglePost />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="*" element={<NotFound />} />

@@ -21,6 +21,7 @@ interface PostCardProps {
   comments: number;
   timeAgo: string;
   image_url?: string;
+  comment_count?: number;
 }
 
 export const PostCard = ({ 
@@ -33,7 +34,8 @@ export const PostCard = ({
   downvotes: initialDownvotes,
   comments, 
   timeAgo,
-  image_url 
+  image_url,
+  comment_count 
 }: PostCardProps) => {
   const { user } = useAuth();
   const { vote, isVoting } = useVote();
@@ -150,6 +152,7 @@ export const PostCard = ({
   };
 
   const totalScore = currentUpvotes - currentDownvotes;
+  const displayCommentCount = comment_count !== undefined ? comment_count : comments;
 
   if (isMobile) {
     return (
@@ -225,7 +228,7 @@ export const PostCard = ({
             
             <Button variant="ghost" size="sm" className="p-1 h-8" onClick={handleCommentClick}>
               <MessageSquare className="h-4 w-4" />
-              <span className="ml-1 text-xs">{comments}</span>
+              <span className="ml-1 text-xs">{displayCommentCount}</span>
             </Button>
           </div>
           
@@ -311,7 +314,7 @@ export const PostCard = ({
           <div className="flex items-center space-x-4 text-gray-500">
             <Button variant="ghost" size="sm" className="hover:bg-gray-100" onClick={handleCommentClick}>
               <MessageSquare className="h-4 w-4 mr-1" />
-              {comments} Commenti
+              {displayCommentCount} Commenti
             </Button>
             <Button variant="ghost" size="sm" className="hover:bg-gray-100" onClick={handleShare}>
               <Share className="h-4 w-4 mr-1" />

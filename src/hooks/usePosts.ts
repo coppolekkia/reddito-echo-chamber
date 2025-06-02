@@ -20,6 +20,7 @@ export interface Post {
     name: string;
   };
   comments?: any[];
+  comment_count?: number;
 }
 
 export const usePosts = () => {
@@ -39,7 +40,22 @@ export const usePosts = () => {
         throw error;
       }
 
-      return data as Post[];
+      // Aggiungi il conteggio dei commenti per ogni post
+      const postsWithCommentCount = await Promise.all(
+        data.map(async (post) => {
+          const { count } = await supabase
+            .from('comments')
+            .select('*', { count: 'exact', head: true })
+            .eq('post_id', post.id);
+          
+          return {
+            ...post,
+            comment_count: count || 0
+          };
+        })
+      );
+
+      return postsWithCommentCount as Post[];
     },
   });
 };

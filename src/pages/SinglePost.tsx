@@ -2,6 +2,7 @@
 import { useParams } from 'react-router-dom';
 import { usePosts } from '@/hooks/usePosts';
 import { PostCard } from '@/components/PostCard';
+import { CommentSection } from '@/components/CommentSection';
 import { Header } from '@/components/Header';
 import { MobileNav } from '@/components/MobileNav';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -53,6 +54,10 @@ export default function SinglePost() {
           timeAgo={new Date(post.created_at).toLocaleString('it-IT')}
           image_url={post.image_url || undefined}
         />
+        
+        <div className="mt-6">
+          <CommentSection postId={post.id} />
+        </div>
       </div>
       {isMobile && <MobileNav />}
     </div>

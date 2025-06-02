@@ -1,7 +1,9 @@
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Home, TrendingUp, Star } from "lucide-react";
+import { Plus, Home, TrendingUp, Star, Users } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 
 const popularCommunities = [
   { name: "reactjs", members: "2.1M", icon: "⚛️" },
@@ -12,12 +14,31 @@ const popularCommunities = [
 ];
 
 export const Sidebar = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const handleCreatePost = () => {
+    if (user) {
+      navigate('/create');
+    } else {
+      navigate('/auth');
+    }
+  };
+
+  const handleCreateCommunity = () => {
+    if (user) {
+      navigate('/create-community');
+    } else {
+      navigate('/auth');
+    }
+  };
+
   return (
     <div className="w-80 space-y-4">
       {/* Navigation */}
       <Card className="p-4">
         <div className="space-y-2">
-          <Button variant="ghost" className="w-full justify-start">
+          <Button variant="ghost" className="w-full justify-start" onClick={() => navigate('/')}>
             <Home className="h-4 w-4 mr-2" />
             Home
           </Button>
@@ -32,18 +53,24 @@ export const Sidebar = () => {
         </div>
       </Card>
 
-      {/* Create Post */}
+      {/* Create */}
       <Card className="p-4">
-        <h3 className="font-semibold mb-3">Create</h3>
-        <Button className="w-full bg-orange-500 hover:bg-orange-600">
-          <Plus className="h-4 w-4 mr-2" />
-          Create Post
-        </Button>
+        <h3 className="font-semibold mb-3">Crea</h3>
+        <div className="space-y-2">
+          <Button className="w-full bg-orange-500 hover:bg-orange-600" onClick={handleCreatePost}>
+            <Plus className="h-4 w-4 mr-2" />
+            Crea Post
+          </Button>
+          <Button variant="outline" className="w-full" onClick={handleCreateCommunity}>
+            <Users className="h-4 w-4 mr-2" />
+            Crea Comunità
+          </Button>
+        </div>
       </Card>
 
       {/* Popular Communities */}
       <Card className="p-4">
-        <h3 className="font-semibold mb-3">Popular Communities</h3>
+        <h3 className="font-semibold mb-3">Community Popolari</h3>
         <div className="space-y-2">
           {popularCommunities.map((community, index) => (
             <div 
@@ -55,11 +82,11 @@ export const Sidebar = () => {
                 <span className="text-lg">{community.icon}</span>
                 <div>
                   <div className="font-medium text-sm">r/{community.name}</div>
-                  <div className="text-xs text-gray-500">{community.members} members</div>
+                  <div className="text-xs text-gray-500">{community.members} membri</div>
                 </div>
               </div>
               <Button variant="outline" size="sm">
-                Join
+                Unisciti
               </Button>
             </div>
           ))}
