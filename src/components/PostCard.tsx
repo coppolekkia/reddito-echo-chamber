@@ -120,20 +120,33 @@ export const PostCard = ({
     const postUrl = `${window.location.origin}/post/${id}`;
     
     try {
-      if (navigator.share) {
+      // Controlla se l'API Web Share è disponibile e supportata
+      if (navigator.share && navigator.canShare && navigator.canShare({ url: postUrl })) {
         await navigator.share({
           title: title,
           text: `Guarda questo post: ${title}`,
           url: postUrl,
         });
       } else {
+        // Fallback: copia negli appunti
         await navigator.clipboard.writeText(postUrl);
         toast.success("Link copiato negli appunti!");
       }
     } catch (error) {
-      console.error('Error sharing:', error);
-      toast.error("Errore durante la condivisione");
+      // Se anche il clipboard fallisce, mostra il link
+      try {
+        await navigator.clipboard.writeText(postUrl);
+        toast.success("Link copiato negli appunti!");
+      } catch (clipboardError) {
+        // Ultimo fallback: mostra un alert con il link
+        alert(`Copia questo link: ${postUrl}`);
+      }
     }
+  };
+
+  const handleCommentClick = () => {
+    // Naviga alla pagina del singolo post per vedere/aggiungere commenti
+    navigate(`/post/${id}`);
   };
 
   const totalScore = currentUpvotes - currentDownvotes;
@@ -210,7 +223,7 @@ export const PostCard = ({
               </Button>
             </div>
             
-            <Button variant="ghost" size="sm" className="p-1 h-8">
+            <Button variant="ghost" size="sm" className="p-1 h-8" onClick={handleCommentClick}>
               <MessageSquare className="h-4 w-4" />
               <span className="ml-1 text-xs">{comments}</span>
             </Button>
@@ -296,7 +309,7 @@ export const PostCard = ({
           )}
 
           <div className="flex items-center space-x-4 text-gray-500">
-            <Button variant="ghost" size="sm" className="hover:bg-gray-100">
+            <Button variant="ghost" size="sm" className="hover:bg-gray-100" onClick={handleCommentClick}>
               <MessageSquare className="h-4 w-4 mr-1" />
               {comments} Commenti
             </Button>

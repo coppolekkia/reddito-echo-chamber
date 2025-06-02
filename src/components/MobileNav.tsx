@@ -9,24 +9,32 @@ export const MobileNav = () => {
   const location = useLocation();
   const { user } = useAuth();
 
+  const handleCreateClick = () => {
+    if (user) {
+      navigate('/create');
+    } else {
+      navigate('/auth');
+    }
+  };
+
   const navItems = [
-    { icon: Home, label: "Home", path: "/" },
-    { icon: Search, label: "Cerca", path: "/search" },
-    { icon: Plus, label: "Crea", path: "/create" },
-    { icon: User, label: user ? "Profilo" : "Login", path: user ? "/profile" : "/auth" },
+    { icon: Home, label: "Home", path: "/", onClick: () => navigate("/") },
+    { icon: Search, label: "Cerca", path: "/search", onClick: () => navigate("/search") },
+    { icon: Plus, label: "Crea", path: "/create", onClick: handleCreateClick },
+    { icon: User, label: user ? "Profilo" : "Login", path: user ? "/profile" : "/auth", onClick: () => navigate(user ? "/profile" : "/auth") },
   ];
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 px-2 py-1 md:hidden">
       <div className="flex justify-around items-center max-w-md mx-auto">
-        {navItems.map((item) => {
+        {navItems.map((item, index) => {
           const isActive = location.pathname === item.path;
           return (
             <Button
-              key={item.path}
+              key={index}
               variant="ghost"
               size="sm"
-              onClick={() => navigate(item.path)}
+              onClick={item.onClick}
               className={`flex flex-col items-center gap-1 h-auto py-2 px-3 ${
                 isActive ? 'text-blue-600' : 'text-gray-600'
               }`}
