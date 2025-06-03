@@ -37,21 +37,3 @@ export const useComments = (postId: string) => {
     },
   });
 };
-
-export const useSubreddits = () => {
-  return useQuery({
-    queryKey: ['subreddits'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('subreddits')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        throw error;
-      }
-
-      return data;
-    },
-  });
-};

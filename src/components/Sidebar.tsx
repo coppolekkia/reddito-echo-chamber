@@ -4,18 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Plus, Home, TrendingUp, Star, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-
-const popularCommunities = [
-  { name: "reactjs", members: "2.1M", icon: "⚛️" },
-  { name: "programming", members: "4.2M", icon: "💻" },
-  { name: "webdev", members: "1.8M", icon: "🌐" },
-  { name: "javascript", members: "3.1M", icon: "🟨" },
-  { name: "technology", members: "5.4M", icon: "🔧" },
-];
+import { useSubreddits } from "@/hooks/useSubreddits";
 
 export const Sidebar = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { data: subreddits, isLoading } = useSubreddits();
 
   const handleCreatePost = () => {
     if (user) {
@@ -68,41 +62,63 @@ export const Sidebar = () => {
         </div>
       </Card>
 
-      {/* Popular Communities */}
+      {/* Communities */}
       <Card className="p-4">
-        <h3 className="font-semibold mb-3">Community Popolari</h3>
-        <div className="space-y-2">
-          {popularCommunities.map((community, index) => (
-            <div 
-              key={community.name}
-              className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
-            >
-              <div className="flex items-center space-x-3">
-                <span className="text-sm">{index + 1}</span>
-                <span className="text-lg">{community.icon}</span>
-                <div>
-                  <div className="font-medium text-sm">r/{community.name}</div>
-                  <div className="text-xs text-gray-500">{community.members} membri</div>
+        <h3 className="font-semibold mb-3">Community</h3>
+        {isLoading ? (
+          <p className="text-sm text-gray-500">Caricamento...</p>
+        ) : (
+          <div className="space-y-2">
+            {subreddits && subreddits.length > 0 ? (
+              subreddits.slice(0, 10).map((community, index) => (
+                <div 
+                  key={community.id}
+                  className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                >
+                  <div className="flex items-center space-x-3">
+                    <span className="text-sm">{index + 1}</span>
+                    <span className="text-lg">🏘️</span>
+                    <div>
+                      <div className="font-medium text-sm">r/{community.name}</div>
+                      {community.description && (
+                        <div className="text-xs text-gray-500 truncate max-w-32">
+                          {community.description}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <Button variant="outline" size="sm">
+                    Unisciti
+                  </Button>
                 </div>
+              ))
+            ) : (
+              <div className="text-center py-4">
+                <p className="text-sm text-gray-500 mb-2">Nessuna comunità ancora</p>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleCreateCommunity}
+                  className="text-xs"
+                >
+                  Crea la prima!
+                </Button>
               </div>
-              <Button variant="outline" size="sm">
-                Unisciti
-              </Button>
-            </div>
-          ))}
-        </div>
+            )}
+          </div>
+        )}
       </Card>
 
       {/* Reddit Premium Ad */}
       <Card className="p-4 bg-gradient-to-r from-orange-50 to-yellow-50 border-orange-200">
         <div className="text-center">
           <div className="text-2xl mb-2">🏆</div>
-          <h3 className="font-semibold text-orange-800 mb-1">Reddit Premium</h3>
+          <h3 className="font-semibold text-orange-800 mb-1">Coppolek Premium</h3>
           <p className="text-sm text-orange-700 mb-3">
-            The best Reddit experience, with monthly Coins
+            La migliore esperienza Coppolek, con funzionalità premium
           </p>
           <Button variant="outline" size="sm" className="border-orange-300 text-orange-800 hover:bg-orange-100">
-            Try Now
+            Prova Ora
           </Button>
         </div>
       </Card>
