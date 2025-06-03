@@ -27,9 +27,9 @@ export const Header = () => {
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2 cursor-pointer" onClick={() => navigate('/')}>
               <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
-                <span className="text-white font-bold text-sm">R</span>
+                <span className="text-white font-bold text-sm">C</span>
               </div>
-              <span className="text-xl font-bold text-gray-900">reddit</span>
+              <span className="text-xl font-bold text-gray-900">coppolek</span>
             </div>
           </div>
 
@@ -38,7 +38,7 @@ export const Header = () => {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input 
-                placeholder="Cerca su Reddit" 
+                placeholder="Cerca su Coppolek" 
                 className="pl-10 bg-gray-50 border-gray-200 focus:bg-white"
               />
             </div>
