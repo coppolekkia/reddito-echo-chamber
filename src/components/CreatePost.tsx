@@ -4,20 +4,24 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
+import { useSubreddits } from '@/hooks/useSubreddits';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
-import { Plus, Link, Loader2, ImagePlus, X, Sparkles } from 'lucide-react';
+import { Plus, Link, Loader2, ImagePlus, X, Sparkles, Users } from 'lucide-react';
 import { ScrapingService } from '@/utils/ScrapingService';
 import { GeminiService } from '@/utils/GeminiService';
+import { useNavigate } from 'react-router-dom';
 
 export const CreatePost = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const { data: subreddits, isLoading: isLoadingSubreddits } = useSubreddits();
   const [isOpen, setIsOpen] = useState(false);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [url, setUrl] = useState('');
-  const [subredditName, setSubredditName] = useState('reactjs');
+  const [selectedSubredditId, setSelectedSubredditId] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isScraping, setIsScraping] = useState(false);
   const [isEnhancing, setIsEnhancing] = useState(false);
@@ -25,7 +29,15 @@ export const CreatePost = () => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [scrapedData, setScrapedData] = useState<any>(null);
+  const [showCreateCommunity, setShowCreateCommunity] = useState(false);
   const queryClient = useQueryClient();
+
+  // Set default subreddit when subreddits load
+  useState(() => {
+    if (subreddits && subreddits.length > 0 && !selectedSubredditId) {
+      setSelectedSubredditId(subreddits[0].id);
+    }
+  }, [subreddits, selectedSubredditId]);
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -171,28 +183,25 @@ export const CreatePost = () => {
     }
   };
 
+  const handleCreateCommunity = () => {
+    navigate('/create-community');
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
 
+    if (!selectedSubredditId) {
+      toast({
+        title: "Errore",
+        description: "Seleziona una comunità",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     try {
-      // Get subreddit ID
-      const { data: subreddit } = await supabase
-        .from('subreddits')
-        .select('id')
-        .eq('name', subredditName)
-        .single();
-
-      if (!subreddit) {
-        toast({
-          title: "Errore",
-          description: "Subreddit non trovato",
-          variant: "destructive",
-        });
-        return;
-      }
-
       let imageUrl = null;
       
       // Handle image upload for image posts
@@ -232,7 +241,7 @@ export const CreatePost = () => {
           title,
           content: postContent || null,
           author_id: user.id,
-          subreddit_id: subreddit.id,
+          subreddit_id: selectedSubredditId,
           image_url: imageUrl,
         });
 
@@ -250,6 +259,7 @@ export const CreatePost = () => {
         setTitle('');
         setContent('');
         setUrl('');
+        setSelectedSubredditId(subreddits?.[0]?.id || '');
         setIsOpen(false);
         setPostType('text');
         removeImage();
@@ -286,19 +296,43 @@ export const CreatePost = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Subreddit
+                Comunità
               </label>
-              <select 
-                value={subredditName}
-                onChange={(e) => setSubredditName(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
-              >
-                <option value="reactjs">r/reactjs</option>
-                <option value="javascript">r/javascript</option>
-                <option value="webdev">r/webdev</option>
-                <option value="programming">r/programming</option>
-                <option value="technology">r/technology</option>
-              </select>
+              <div className="flex gap-2">
+                <select 
+                  value={selectedSubredditId}
+                  onChange={(e) => setSelectedSubredditId(e.target.value)}
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  disabled={isLoadingSubreddits}
+                >
+                  {isLoadingSubreddits ? (
+                    <option>Caricamento...</option>
+                  ) : subreddits && subreddits.length > 0 ? (
+                    subreddits.map((subreddit) => (
+                      <option key={subreddit.id} value={subreddit.id}>
+                        r/{subreddit.name}
+                        {subreddit.description && ` - ${subreddit.description.substring(0, 50)}${subreddit.description.length > 50 ? '...' : ''}`}
+                      </option>
+                    ))
+                  ) : (
+                    <option value="">Nessuna comunità disponibile</option>
+                  )}
+                </select>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleCreateCommunity}
+                  className="flex-shrink-0"
+                >
+                  <Users className="h-4 w-4 mr-2" />
+                  Nuova
+                </Button>
+              </div>
+              {(!subreddits || subreddits.length === 0) && !isLoadingSubreddits && (
+                <p className="text-sm text-gray-500 mt-1">
+                  Non ci sono comunità disponibili. Crea la prima comunità!
+                </p>
+              )}
             </div>
 
             <div>
@@ -456,7 +490,7 @@ export const CreatePost = () => {
             <div className="flex gap-2">
               <Button 
                 type="submit" 
-                disabled={isSubmitting}
+                disabled={isSubmitting || !selectedSubredditId}
                 className="bg-orange-500 hover:bg-orange-600"
               >
                 {isSubmitting ? 'Pubblicazione...' : 'Pubblica'}
@@ -471,6 +505,7 @@ export const CreatePost = () => {
                   setUrl('');
                   setPostType('text');
                   setScrapedData(null);
+                  setSelectedSubredditId(subreddits?.[0]?.id || '');
                   removeImage();
                 }}
               >

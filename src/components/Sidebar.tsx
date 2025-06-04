@@ -1,7 +1,7 @@
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Home, TrendingUp, Star, Users } from "lucide-react";
+import { Plus, Home, TrendingUp, Star, Users, Hash } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubreddits } from "@/hooks/useSubreddits";
@@ -27,6 +27,11 @@ export const Sidebar = () => {
     }
   };
 
+  const handleCommunityClick = (communityName: string) => {
+    // TODO: Navigate to community page when implemented
+    console.log(`Navigating to community: ${communityName}`);
+  };
+
   return (
     <div className="w-full space-y-3 lg:space-y-4">
       {/* Navigation */}
@@ -38,11 +43,11 @@ export const Sidebar = () => {
           </Button>
           <Button variant="ghost" className="w-full justify-start text-sm lg:text-base h-8 lg:h-10">
             <TrendingUp className="h-4 w-4 mr-2" />
-            Popular
+            Popolari
           </Button>
           <Button variant="ghost" className="w-full justify-start text-sm lg:text-base h-8 lg:h-10">
             <Star className="h-4 w-4 mr-2" />
-            All
+            Tutti
           </Button>
         </div>
       </Card>
@@ -64,44 +69,93 @@ export const Sidebar = () => {
 
       {/* Communities */}
       <Card className="p-3 lg:p-4">
-        <h3 className="font-semibold mb-2 lg:mb-3 text-sm lg:text-base">Community</h3>
+        <div className="flex items-center justify-between mb-2 lg:mb-3">
+          <h3 className="font-semibold text-sm lg:text-base">Comunità</h3>
+          {subreddits && subreddits.length > 0 && (
+            <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+              {subreddits.length}
+            </span>
+          )}
+        </div>
+        
         {isLoading ? (
-          <p className="text-xs lg:text-sm text-gray-500">Caricamento...</p>
-        ) : (
           <div className="space-y-2">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="animate-pulse">
+                <div className="flex items-center space-x-3 p-2">
+                  <div className="h-4 w-4 bg-gray-200 rounded"></div>
+                  <div className="h-4 flex-1 bg-gray-200 rounded"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="space-y-1">
             {subreddits && subreddits.length > 0 ? (
-              subreddits.slice(0, 8).map((community, index) => (
+              subreddits.slice(0, 10).map((community, index) => (
                 <div 
                   key={community.id}
-                  className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                  className="group flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                  onClick={() => handleCommunityClick(community.name)}
                 >
                   <div className="flex items-center space-x-2 lg:space-x-3 min-w-0 flex-1">
                     <span className="text-xs lg:text-sm font-medium text-gray-400">{index + 1}</span>
-                    <span className="text-base lg:text-lg">🏘️</span>
+                    <Hash className="h-4 w-4 text-orange-500 flex-shrink-0" />
                     <div className="min-w-0 flex-1">
-                      <div className="font-medium text-xs lg:text-sm truncate">r/{community.name}</div>
+                      <div className="font-medium text-xs lg:text-sm truncate group-hover:text-orange-600 transition-colors">
+                        r/{community.name}
+                      </div>
                       {community.description && (
-                        <div className="text-xs text-gray-500 truncate">
+                        <div className="text-xs text-gray-500 truncate mt-0.5">
                           {community.description}
                         </div>
                       )}
                     </div>
                   </div>
-                  <Button variant="outline" size="sm" className="text-xs h-6 lg:h-8 px-2 lg:px-3 flex-shrink-0">
-                    Unisciti
-                  </Button>
+                  <div className="flex items-center space-x-1 flex-shrink-0">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="text-xs h-6 lg:h-7 px-2 lg:px-3 opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        // TODO: Implement join/leave functionality
+                        console.log(`Joining community: ${community.name}`);
+                      }}
+                    >
+                      Unisciti
+                    </Button>
+                  </div>
                 </div>
               ))
             ) : (
-              <div className="text-center py-3 lg:py-4">
-                <p className="text-xs lg:text-sm text-gray-500 mb-2">Nessuna comunità ancora</p>
+              <div className="text-center py-4 lg:py-6">
+                <Hash className="h-8 w-8 text-gray-300 mx-auto mb-2" />
+                <p className="text-xs lg:text-sm text-gray-500 mb-3">Nessuna comunità ancora</p>
                 <Button 
                   variant="outline" 
                   size="sm" 
                   onClick={handleCreateCommunity}
-                  className="text-xs h-6 lg:h-8"
+                  className="text-xs h-7 lg:h-8"
                 >
+                  <Plus className="h-3 w-3 mr-1" />
                   Crea la prima!
+                </Button>
+              </div>
+            )}
+            
+            {subreddits && subreddits.length > 10 && (
+              <div className="pt-2 border-t border-gray-100">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full text-xs text-gray-500 hover:text-gray-700"
+                  onClick={() => {
+                    // TODO: Navigate to all communities page
+                    console.log('Show all communities');
+                  }}
+                >
+                  Mostra tutte ({subreddits.length - 10} altre)
                 </Button>
               </div>
             )}
