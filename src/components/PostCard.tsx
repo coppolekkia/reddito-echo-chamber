@@ -1,9 +1,11 @@
+
 import { ArrowUp, ArrowDown, MessageSquare, Share, Bookmark } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
 import { useVote } from "@/hooks/usePosts";
+import { useSavedPosts } from "@/hooks/useSavedPosts";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
@@ -39,6 +41,7 @@ export const PostCard = ({
 }: PostCardProps) => {
   const { user } = useAuth();
   const { vote, isVoting } = useVote();
+  const { toggleSave, isPostSaved, isSaving } = useSavedPosts();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
@@ -118,6 +121,17 @@ export const PostCard = ({
     }
   };
 
+  const handleSave = () => {
+    if (!user) {
+      toast.error("Devi essere loggato per salvare i post");
+      navigate('/auth');
+      return;
+    }
+
+    toggleSave(id);
+    toast.success(isPostSaved(id) ? "Post rimosso dai salvati" : "Post salvato!");
+  };
+
   const handleShare = async () => {
     const postUrl = `${window.location.origin}/post/${id}`;
     
@@ -153,6 +167,7 @@ export const PostCard = ({
 
   const totalScore = currentUpvotes - currentDownvotes;
   const displayCommentCount = comment_count !== undefined ? comment_count : comments;
+  const isPostCurrentlySaved = isPostSaved(id);
 
   if (isMobile) {
     return (
@@ -236,8 +251,14 @@ export const PostCard = ({
             <Button variant="ghost" size="sm" className="p-1 h-8" onClick={handleShare}>
               <Share className="h-4 w-4" />
             </Button>
-            <Button variant="ghost" size="sm" className="p-1 h-8">
-              <Bookmark className="h-4 w-4" />
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className={`p-1 h-8 ${isPostCurrentlySaved ? 'text-orange-500' : ''}`}
+              onClick={handleSave}
+              disabled={isSaving}
+            >
+              <Bookmark className={`h-4 w-4 ${isPostCurrentlySaved ? 'fill-current' : ''}`} />
             </Button>
           </div>
         </div>
@@ -320,9 +341,15 @@ export const PostCard = ({
               <Share className="h-4 w-4 mr-1" />
               Condividi
             </Button>
-            <Button variant="ghost" size="sm" className="hover:bg-gray-100">
-              <Bookmark className="h-4 w-4 mr-1" />
-              Salva
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className={`hover:bg-gray-100 ${isPostCurrentlySaved ? 'text-orange-500' : ''}`}
+              onClick={handleSave}
+              disabled={isSaving}
+            >
+              <Bookmark className={`h-4 w-4 mr-1 ${isPostCurrentlySaved ? 'fill-current' : ''}`} />
+              {isPostCurrentlySaved ? 'Salvato' : 'Salva'}
             </Button>
           </div>
         </div>

@@ -7,8 +7,9 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
-import { Plus, Link, Loader2, ImagePlus, X } from 'lucide-react';
+import { Plus, Link, Loader2, ImagePlus, X, Sparkles } from 'lucide-react';
 import { ScrapingService } from '@/utils/ScrapingService';
+import { GeminiService } from '@/utils/GeminiService';
 
 export const CreatePost = () => {
   const { user } = useAuth();
@@ -19,9 +20,11 @@ export const CreatePost = () => {
   const [subredditName, setSubredditName] = useState('reactjs');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isScraping, setIsScraping] = useState(false);
+  const [isEnhancing, setIsEnhancing] = useState(false);
   const [postType, setPostType] = useState<'text' | 'link' | 'image'>('text');
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [scrapedData, setScrapedData] = useState<any>(null);
   const queryClient = useQueryClient();
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -82,6 +85,7 @@ export const CreatePost = () => {
         }
         
         setContent(contentParts.join('\n'));
+        setScrapedData(result.data);
         
         toast({
           title: "Contenuto recuperato!",
@@ -102,6 +106,45 @@ export const CreatePost = () => {
       });
     } finally {
       setIsScraping(false);
+    }
+  };
+
+  const handleEnhanceWithAI = async () => {
+    if (!title.trim() && !content.trim()) {
+      toast({
+        title: "Errore",
+        description: "Inserisci un titolo o contenuto da approfondire",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsEnhancing(true);
+    try {
+      const result = await GeminiService.enhancePostContent(title, content, url);
+      
+      if (result.success && result.data) {
+        setContent(result.data);
+        
+        toast({
+          title: "Contenuto approfondito!",
+          description: "L'AI ha analizzato e approfondito il contenuto",
+        });
+      } else {
+        toast({
+          title: "Errore",
+          description: result.error || "Impossibile approfondire il contenuto",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Errore",
+        description: "Errore durante l'approfondimento con AI",
+        variant: "destructive",
+      });
+    } finally {
+      setIsEnhancing(false);
     }
   };
 
@@ -385,6 +428,30 @@ export const CreatePost = () => {
                 rows={4}
               />
             </div>
+
+            {(title.trim() || content.trim() || scrapedData) && (
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  onClick={handleEnhanceWithAI}
+                  disabled={isEnhancing}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  {isEnhancing ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      Approfondimento...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="h-4 w-4 mr-2" />
+                      Approfondisci con AI
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
             
             <div className="flex gap-2">
               <Button 
@@ -403,6 +470,7 @@ export const CreatePost = () => {
                   setContent('');
                   setUrl('');
                   setPostType('text');
+                  setScrapedData(null);
                   removeImage();
                 }}
               >

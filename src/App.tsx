@@ -11,6 +11,7 @@ import Create from "./pages/Create";
 import SinglePost from "./pages/SinglePost";
 import CreateCommunityPage from "./pages/CreateCommunity";
 import Admin from "./pages/Admin";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +29,7 @@ const App = () => (
             <Route path="/create" element={<Create />} />
             <Route path="/create-community" element={<CreateCommunityPage />} />
             <Route path="/post/:id" element={<SinglePost />} />
+            <Route path="/profile" element={<Profile />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
