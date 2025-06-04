@@ -14,12 +14,12 @@ export const useSavedPosts = () => {
       if (!user) return [];
       
       const { data, error } = await supabase
-        .from('saved_posts')
+        .from('saved_posts' as any)
         .select('post_id')
         .eq('user_id', user.id);
 
       if (error) throw error;
-      return data.map(item => item.post_id);
+      return data.map((item: any) => item.post_id);
     },
     enabled: !!user,
   });
@@ -29,7 +29,7 @@ export const useSavedPosts = () => {
       if (!user) throw new Error('User not authenticated');
 
       const { error } = await supabase
-        .from('saved_posts')
+        .from('saved_posts' as any)
         .insert({
           user_id: user.id,
           post_id: postId,
@@ -47,7 +47,7 @@ export const useSavedPosts = () => {
       if (!user) throw new Error('User not authenticated');
 
       const { error } = await supabase
-        .from('saved_posts')
+        .from('saved_posts' as any)
         .delete()
         .eq('user_id', user.id)
         .eq('post_id', postId);
