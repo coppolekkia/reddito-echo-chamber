@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -33,7 +33,7 @@ export const CreatePost = () => {
   const queryClient = useQueryClient();
 
   // Set default subreddit when subreddits load
-  useState(() => {
+  useEffect(() => {
     if (subreddits && subreddits.length > 0 && !selectedSubredditId) {
       setSelectedSubredditId(subreddits[0].id);
     }
