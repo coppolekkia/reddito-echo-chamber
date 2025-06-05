@@ -160,8 +160,9 @@ serve(async (req) => {
     // Extract content - try multiple approaches with better text extraction
     let content = description
     if (!content) {
-      // Try to extract first meaningful paragraph
-      const paragraphs = html.match(/<p[^>]*>([^<]+(?:<[^/][^>]*>[^<]*</[^>]*>[^<]*)*)<\/p>/gi)
+      // Try to extract first meaningful paragraph - FIXED REGEX
+      const paragraphRegex = /<p[^>]*>([^<]+(?:<[^/][^>]*>[^<]*<\/[^>]*>[^<]*)*)<\/p>/gi
+      const paragraphs = html.match(paragraphRegex)
       if (paragraphs && paragraphs.length > 0) {
         for (const p of paragraphs.slice(0, 3)) {
           const textContent = p.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
