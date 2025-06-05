@@ -43,7 +43,12 @@ serve(async (req) => {
       geminiPrompt += `\n\nURL di riferimento: ${url}`;
     }
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${geminiApiKey}`, {
+    console.log('Using Gemini API with prompt:', geminiPrompt.substring(0, 100) + '...');
+
+    // Nuovo endpoint corretto per Gemini API
+    const apiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`;
+    
+    const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -59,17 +64,40 @@ serve(async (req) => {
           topK: 40,
           topP: 0.95,
           maxOutputTokens: 1024,
-        }
+        },
+        safetySettings: [
+          {
+            category: "HARM_CATEGORY_HARASSMENT",
+            threshold: "BLOCK_MEDIUM_AND_ABOVE"
+          },
+          {
+            category: "HARM_CATEGORY_HATE_SPEECH",
+            threshold: "BLOCK_MEDIUM_AND_ABOVE"
+          },
+          {
+            category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+            threshold: "BLOCK_MEDIUM_AND_ABOVE"
+          },
+          {
+            category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+            threshold: "BLOCK_MEDIUM_AND_ABOVE"
+          }
+        ]
       }),
     });
 
+    console.log('Gemini API response status:', response.status);
+
     if (!response.ok) {
-      throw new Error(`Gemini API error: ${response.status}`);
+      const errorText = await response.text();
+      console.error('Gemini API error response:', errorText);
+      throw new Error(`Gemini API error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
+    console.log('Gemini API response data:', JSON.stringify(data, null, 2));
     
-    if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+    if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) {
       const enhancedContent = data.candidates[0].content.parts[0].text;
       
       return new Response(JSON.stringify({ 
@@ -79,6 +107,7 @@ serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     } else {
+      console.error('Unexpected Gemini API response structure:', data);
       throw new Error('Risposta non valida da Gemini API');
     }
 
