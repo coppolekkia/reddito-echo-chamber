@@ -1,6 +1,7 @@
 
-import { PostCard } from "./PostCard";
+import { PostCardWithBanner } from "./PostCardWithBanner";
 import { CreatePost } from "./CreatePost";
+import { BannerDisplay } from "./BannerDisplay";
 import { usePosts } from "@/hooks/usePosts";
 import { useAuth } from "@/hooks/useAuth";
 import { usePostSorting, SortType } from "@/hooks/usePostSorting";
@@ -58,6 +59,9 @@ export const PostFeed = () => {
 
   return (
     <div className="w-full max-w-full">
+      {/* Banner popup */}
+      <BannerDisplay position="popup" />
+      
       {user ? (
         <div className="mb-4 lg:mb-6">
           <CreatePost />
@@ -109,7 +113,7 @@ export const PostFeed = () => {
       <div className="space-y-0">
         {sortedPosts && sortedPosts.length > 0 ? (
           sortedPosts.map((post) => (
-            <PostCard 
+            <PostCardWithBanner 
               key={post.id} 
               id={post.id}
               title={post.title}

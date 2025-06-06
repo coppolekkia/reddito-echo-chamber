@@ -16,7 +16,7 @@ export interface Banner {
   image_url?: string;
   link_url?: string;
   is_active: boolean;
-  position: 'top' | 'sidebar' | 'bottom';
+  position: 'top' | 'sidebar' | 'bottom' | 'inside-post' | 'popup';
   priority: number;
   created_by: string;
   created_at: string;
@@ -26,7 +26,7 @@ export interface Banner {
 // Funzione helper per convertire i dati del database al nostro tipo Banner
 const convertDatabaseBanner = (dbBanner: DatabaseBanner): Banner => ({
   ...dbBanner,
-  position: dbBanner.position as 'top' | 'sidebar' | 'bottom'
+  position: dbBanner.position as 'top' | 'sidebar' | 'bottom' | 'inside-post' | 'popup'
 });
 
 export const useBanners = () => {

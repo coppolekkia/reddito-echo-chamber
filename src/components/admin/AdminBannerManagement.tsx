@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useAdminBanners, Banner } from '@/hooks/useBanners';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -24,7 +23,7 @@ export const AdminBannerManagement = () => {
     content_type: 'text' as 'text' | 'html',
     image_url: '',
     link_url: '',
-    position: 'top' as 'top' | 'sidebar' | 'bottom',
+    position: 'top' as 'top' | 'sidebar' | 'bottom' | 'inside-post' | 'popup',
     priority: 0,
     is_active: true
   });
@@ -82,6 +81,28 @@ export const AdminBannerManagement = () => {
       priority: banner.priority,
       is_active: banner.is_active
     });
+  };
+
+  const getPositionLabel = (position: string) => {
+    switch (position) {
+      case 'top': return 'Top';
+      case 'sidebar': return 'Sidebar';
+      case 'bottom': return 'Bottom';
+      case 'inside-post': return 'Interno Post';
+      case 'popup': return 'Popup';
+      default: return position;
+    }
+  };
+
+  const getPositionBadgeVariant = (position: string) => {
+    switch (position) {
+      case 'top': return 'default';
+      case 'sidebar': return 'secondary';
+      case 'bottom': return 'outline';
+      case 'inside-post': return 'destructive';
+      case 'popup': return 'default';
+      default: return 'outline';
+    }
   };
 
   if (loading) {
@@ -156,8 +177,8 @@ export const AdminBannerManagement = () => {
                       )}
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline">
-                        {banner.position}
+                      <Badge variant={getPositionBadgeVariant(banner.position)}>
+                        {getPositionLabel(banner.position)}
                       </Badge>
                     </TableCell>
                     <TableCell>
@@ -310,6 +331,8 @@ const BannerForm = ({ formData, setFormData }: BannerFormProps) => {
             <SelectItem value="top">Top</SelectItem>
             <SelectItem value="sidebar">Sidebar</SelectItem>
             <SelectItem value="bottom">Bottom</SelectItem>
+            <SelectItem value="inside-post">Interno Post</SelectItem>
+            <SelectItem value="popup">Popup</SelectItem>
           </SelectContent>
         </Select>
       </div>
