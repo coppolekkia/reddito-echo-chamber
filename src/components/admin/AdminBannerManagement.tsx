@@ -9,7 +9,8 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Edit, Trash2, ExternalLink } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Plus, Edit, Trash2, ExternalLink, Code } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 export const AdminBannerManagement = () => {
@@ -20,6 +21,7 @@ export const AdminBannerManagement = () => {
   const [formData, setFormData] = useState({
     title: '',
     content: '',
+    content_type: 'text' as 'text' | 'html',
     image_url: '',
     link_url: '',
     position: 'top' as 'top' | 'sidebar' | 'bottom',
@@ -31,6 +33,7 @@ export const AdminBannerManagement = () => {
     setFormData({
       title: '',
       content: '',
+      content_type: 'text',
       image_url: '',
       link_url: '',
       position: 'top',
@@ -72,6 +75,7 @@ export const AdminBannerManagement = () => {
     setFormData({
       title: banner.title,
       content: banner.content || '',
+      content_type: banner.content?.includes('<') ? 'html' : 'text',
       image_url: banner.image_url || '',
       link_url: banner.link_url || '',
       position: banner.position,
@@ -102,7 +106,7 @@ export const AdminBannerManagement = () => {
                   Nuovo Banner
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-md">
+              <DialogContent className="max-w-2xl">
                 <DialogHeader>
                   <DialogTitle>Crea Nuovo Banner</DialogTitle>
                   <DialogDescription>
@@ -129,6 +133,7 @@ export const AdminBannerManagement = () => {
                 <TableRow>
                   <TableHead>Titolo</TableHead>
                   <TableHead>Posizione</TableHead>
+                  <TableHead>Tipo</TableHead>
                   <TableHead>Priorità</TableHead>
                   <TableHead>Stato</TableHead>
                   <TableHead>Azioni</TableHead>
@@ -146,13 +151,20 @@ export const AdminBannerManagement = () => {
                       </div>
                       {banner.content && (
                         <p className="text-sm text-gray-500 truncate max-w-xs">
-                          {banner.content}
+                          {banner.content.includes('<') ? 'Contenuto HTML' : banner.content}
                         </p>
                       )}
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline">
                         {banner.position}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={banner.content?.includes('<') ? "default" : "secondary"}>
+                        {banner.content?.includes('<') ? (
+                          <><Code className="h-3 w-3 mr-1" />HTML</>
+                        ) : 'Testo'}
                       </Badge>
                     </TableCell>
                     <TableCell>{banner.priority}</TableCell>
@@ -190,7 +202,7 @@ export const AdminBannerManagement = () => {
 
       {editingBanner && (
         <Dialog open={!!editingBanner} onOpenChange={() => setEditingBanner(null)}>
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>Modifica Banner</DialogTitle>
               <DialogDescription>
@@ -232,12 +244,39 @@ const BannerForm = ({ formData, setFormData }: BannerFormProps) => {
 
       <div>
         <label className="text-sm font-medium">Contenuto</label>
-        <Textarea
-          value={formData.content}
-          onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-          placeholder="Descrizione del banner"
-          rows={3}
-        />
+        <Tabs 
+          value={formData.content_type} 
+          onValueChange={(value) => setFormData({ ...formData, content_type: value })}
+          className="w-full"
+        >
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="text">Testo</TabsTrigger>
+            <TabsTrigger value="html">
+              <Code className="h-4 w-4 mr-1" />
+              Codice HTML
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value="text" className="mt-2">
+            <Textarea
+              value={formData.content}
+              onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+              placeholder="Descrizione del banner"
+              rows={3}
+            />
+          </TabsContent>
+          <TabsContent value="html" className="mt-2">
+            <Textarea
+              value={formData.content}
+              onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+              placeholder="<div>Inserisci qui il tuo codice HTML...</div>"
+              rows={6}
+              className="font-mono text-sm"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Puoi inserire HTML, CSS inline e anche JavaScript. Usa con attenzione.
+            </p>
+          </TabsContent>
+        </Tabs>
       </div>
 
       <div>

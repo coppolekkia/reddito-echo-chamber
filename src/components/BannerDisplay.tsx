@@ -32,6 +32,8 @@ const BannerCard = ({ banner }: { banner: Banner }) => {
     }
   };
 
+  const isHtmlContent = banner.content?.includes('<');
+
   return (
     <Card 
       className={`${banner.link_url ? 'cursor-pointer hover:shadow-md transition-shadow' : ''} border-orange-200 bg-gradient-to-r from-orange-50 to-yellow-50`}
@@ -56,9 +58,18 @@ const BannerCard = ({ banner }: { banner: Banner }) => {
               )}
             </div>
             {banner.content && (
-              <p className="text-sm text-gray-600 mt-1 line-clamp-2">
-                {banner.content}
-              </p>
+              <div className="mt-1">
+                {isHtmlContent ? (
+                  <div 
+                    className="text-sm text-gray-600"
+                    dangerouslySetInnerHTML={{ __html: banner.content }}
+                  />
+                ) : (
+                  <p className="text-sm text-gray-600 line-clamp-2">
+                    {banner.content}
+                  </p>
+                )}
+              </div>
             )}
           </div>
         </div>
