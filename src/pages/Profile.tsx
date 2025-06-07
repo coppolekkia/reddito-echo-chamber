@@ -1,4 +1,3 @@
-
 import { Header } from "@/components/Header";
 import { MobileNav } from "@/components/MobileNav";
 import { useAuth } from "@/hooks/useAuth";
@@ -105,7 +104,6 @@ export default function Profile() {
                   comments={0}
                   timeAgo={new Date(post.created_at).toLocaleString('it-IT')}
                   image_url={post.image_url || undefined}
-                  comment_count={post.comment_count}
                 />
               ))}
             </div>
