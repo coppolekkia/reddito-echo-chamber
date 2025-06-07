@@ -10,6 +10,7 @@ import Auth from "./pages/Auth";
 import Create from "./pages/Create";
 import SinglePost from "./pages/SinglePost";
 import CreateCommunityPage from "./pages/CreateCommunity";
+import CommunityPage from "./pages/Community";
 import Admin from "./pages/Admin";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
@@ -29,6 +30,7 @@ const App = () => (
             <Route path="/create" element={<Create />} />
             <Route path="/create-community" element={<CreateCommunityPage />} />
             <Route path="/post/:id" element={<SinglePost />} />
+            <Route path="/r/:subreddit" element={<CommunityPage />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="*" element={<NotFound />} />

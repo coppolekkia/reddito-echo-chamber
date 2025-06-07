@@ -6,6 +6,7 @@ import { BannerDisplay } from '@/components/BannerDisplay';
 import { CommentSection } from '@/components/CommentSection';
 import { Header } from '@/components/Header';
 import { MobileNav } from '@/components/MobileNav';
+import { MetaTags } from '@/components/MetaTags';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 export default function SinglePost() {
@@ -31,6 +32,7 @@ export default function SinglePost() {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header />
+        <MetaTags title="Post non trovato - Coppolek" />
         <div className="flex items-center justify-center min-h-screen">
           <p className="text-gray-600">Post non trovato</p>
         </div>
@@ -39,8 +41,23 @@ export default function SinglePost() {
     );
   }
 
+  // Prepare meta tags data
+  const postTitle = `${post.title} - r/${post.subreddits.name}`;
+  const postDescription = post.content ? 
+    post.content.substring(0, 160) + (post.content.length > 160 ? '...' : '') : 
+    `Post di u/${post.profiles.username} in r/${post.subreddits.name}`;
+  const postImage = post.image_url || 'https://lovable.dev/opengraph-image-p98pqg.png';
+  const postUrl = `${window.location.origin}/post/${post.id}`;
+
   return (
     <div className="min-h-screen bg-gray-50">
+      <MetaTags 
+        title={postTitle}
+        description={postDescription}
+        image={postImage}
+        url={postUrl}
+        type="article"
+      />
       <Header />
       
       {/* Banner popup */}

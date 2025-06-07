@@ -1,4 +1,3 @@
-
 import { ArrowUp, ArrowDown, MessageSquare, Share, Bookmark } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -48,6 +47,7 @@ export const PostCard = ({
   const [userVote, setUserVote] = useState<'up' | 'down' | null>(null);
   const [currentUpvotes, setCurrentUpvotes] = useState(initialUpvotes);
   const [currentDownvotes, setCurrentDownvotes] = useState(initialDownvotes);
+  const [showFullContent, setShowFullContent] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -165,9 +165,20 @@ export const PostCard = ({
     navigate(`/post/${id}`);
   };
 
+  const handleSubredditClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigate(`/r/${subreddit}`);
+  };
+
   const totalScore = currentUpvotes - currentDownvotes;
   const displayCommentCount = comment_count !== undefined ? comment_count : comments;
   const isPostCurrentlySaved = isPostSaved(id);
+
+  // Determine if content should be truncated
+  const shouldTruncateContent = content && content.length > 300;
+  const displayContent = shouldTruncateContent && !showFullContent 
+    ? content.substring(0, 300) + '...' 
+    : content;
 
   if (isMobile) {
     return (
@@ -175,7 +186,12 @@ export const PostCard = ({
         {/* Header del post */}
         <div className="p-3 pb-2">
           <div className="flex items-center text-xs text-gray-500 mb-2 flex-wrap">
-            <span className="font-semibold text-gray-700">r/{subreddit}</span>
+            <span 
+              className="font-semibold text-gray-700 hover:text-orange-500 cursor-pointer"
+              onClick={handleSubredditClick}
+            >
+              r/{subreddit}
+            </span>
             <span className="mx-1">•</span>
             <span>u/{author}</span>
             <span className="mx-1">•</span>
@@ -190,11 +206,19 @@ export const PostCard = ({
           </h3>
         </div>
 
-        {/* Contenuto */}
+        {/* Contenuto con possibilità di espansione */}
         {content && (
           <div className="px-3 pb-2">
-            <div className="text-sm text-gray-700 whitespace-pre-wrap break-words line-clamp-4">
-              {content}
+            <div className="text-sm text-gray-700 whitespace-pre-wrap break-words">
+              {displayContent}
+              {shouldTruncateContent && (
+                <button
+                  onClick={() => setShowFullContent(!showFullContent)}
+                  className="text-orange-500 hover:text-orange-600 ml-2 font-medium"
+                >
+                  {showFullContent ? 'Mostra meno' : 'Leggi tutto'}
+                </button>
+              )}
             </div>
           </div>
         )}
@@ -205,7 +229,7 @@ export const PostCard = ({
             <img 
               src={image_url} 
               alt="Post content" 
-              className="w-full max-h-64 object-cover rounded-lg border border-gray-200"
+              className="w-full max-h-80 object-cover rounded-lg border border-gray-200"
               onError={(e) => {
                 console.error('Error loading image:', image_url);
                 e.currentTarget.style.display = 'none';
@@ -266,7 +290,7 @@ export const PostCard = ({
     );
   }
 
-  // Layout desktop originale
+  // Layout desktop con miglioramenti per il contenuto
   return (
     <Card className="mb-4 overflow-hidden hover:shadow-md transition-shadow duration-200">
       <div className="flex">
@@ -298,7 +322,12 @@ export const PostCard = ({
         {/* Content Section */}
         <div className="flex-1 p-4">
           <div className="flex items-center text-sm text-gray-500 mb-2">
-            <span className="font-semibold text-gray-700">r/{subreddit}</span>
+            <span 
+              className="font-semibold text-gray-700 hover:text-orange-500 cursor-pointer"
+              onClick={handleSubredditClick}
+            >
+              r/{subreddit}
+            </span>
             <span className="mx-2">•</span>
             <span>Postato da u/{author}</span>
             <span className="mx-2">•</span>
@@ -314,7 +343,15 @@ export const PostCard = ({
           
           {content && (
             <div className="text-gray-700 mb-3 whitespace-pre-wrap break-words">
-              {content}
+              {displayContent}
+              {shouldTruncateContent && (
+                <button
+                  onClick={() => setShowFullContent(!showFullContent)}
+                  className="text-orange-500 hover:text-orange-600 ml-2 font-medium"
+                >
+                  {showFullContent ? 'Mostra meno' : 'Leggi tutto'}
+                </button>
+              )}
             </div>
           )}
 
