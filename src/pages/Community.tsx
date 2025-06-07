@@ -1,11 +1,13 @@
 
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Header } from '@/components/Header';
 import { MobileNav } from '@/components/MobileNav';
 import { PostFeed } from '@/components/PostFeed';
 import { BannerDisplay } from '@/components/BannerDisplay';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useSubreddits } from '@/hooks/useSubreddits';
+import { useCommunityManagement } from '@/hooks/useCommunityManagement';
+import { useAuth } from '@/hooks/useAuth';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -13,10 +15,29 @@ import { Users, Calendar } from 'lucide-react';
 
 export default function CommunityPage() {
   const { subreddit } = useParams();
+  const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { user } = useAuth();
   const { data: subreddits, isLoading } = useSubreddits();
+  const { communities, joinCommunity, leaveCommunity, isJoining, isLeaving } = useCommunityManagement();
   
   const community = subreddits?.find(s => s.name === subreddit);
+  const communityWithStats = communities?.find(c => c.name === subreddit);
+
+  const handleJoinLeave = () => {
+    if (!user) {
+      navigate('/auth');
+      return;
+    }
+
+    if (!community) return;
+
+    if (communityWithStats?.is_member) {
+      leaveCommunity.mutate(community.id);
+    } else {
+      joinCommunity.mutate(community.id);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -64,7 +85,7 @@ export default function CommunityPage() {
               <div className="flex items-center space-x-4 mt-3">
                 <Badge variant="secondary" className="flex items-center space-x-1">
                   <Users className="h-3 w-3" />
-                  <span>Membri: N/A</span>
+                  <span>Membri: {communityWithStats?.member_count || 0}</span>
                 </Badge>
                 <Badge variant="outline" className="flex items-center space-x-1">
                   <Calendar className="h-3 w-3" />
@@ -72,8 +93,13 @@ export default function CommunityPage() {
                 </Badge>
               </div>
             </div>
-            <Button variant="outline">
-              Unisciti
+            <Button 
+              onClick={handleJoinLeave}
+              disabled={isJoining || isLeaving}
+              variant={communityWithStats?.is_member ? "outline" : "default"}
+            >
+              {isJoining || isLeaving ? 'Caricamento...' : 
+               communityWithStats?.is_member ? 'Lascia' : 'Unisciti'}
             </Button>
           </div>
         </div>

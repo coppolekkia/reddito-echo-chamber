@@ -5,11 +5,13 @@ import { Plus, Home, TrendingUp, Star, Users, Hash } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubreddits } from "@/hooks/useSubreddits";
+import { useCommunityManagement } from "@/hooks/useCommunityManagement";
 
 export const Sidebar = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { data: subreddits, isLoading } = useSubreddits();
+  const { communities, joinCommunity, isJoining } = useCommunityManagement();
 
   const handleCreatePost = () => {
     if (user) {
@@ -28,8 +30,16 @@ export const Sidebar = () => {
   };
 
   const handleCommunityClick = (communityName: string) => {
-    // TODO: Navigate to community page when implemented
-    console.log(`Navigating to community: ${communityName}`);
+    navigate(`/r/${communityName}`);
+  };
+
+  const handleJoinCommunity = (e: React.MouseEvent, communityId: string) => {
+    e.stopPropagation();
+    if (!user) {
+      navigate('/auth');
+      return;
+    }
+    joinCommunity.mutate(communityId);
   };
 
   return (
@@ -92,42 +102,47 @@ export const Sidebar = () => {
         ) : (
           <div className="space-y-1">
             {subreddits && subreddits.length > 0 ? (
-              subreddits.slice(0, 10).map((community, index) => (
-                <div 
-                  key={community.id}
-                  className="group flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
-                  onClick={() => handleCommunityClick(community.name)}
-                >
-                  <div className="flex items-center space-x-2 lg:space-x-3 min-w-0 flex-1">
-                    <span className="text-xs lg:text-sm font-medium text-gray-400">{index + 1}</span>
-                    <Hash className="h-4 w-4 text-orange-500 flex-shrink-0" />
-                    <div className="min-w-0 flex-1">
-                      <div className="font-medium text-xs lg:text-sm truncate group-hover:text-orange-600 transition-colors">
-                        r/{community.name}
-                      </div>
-                      {community.description && (
-                        <div className="text-xs text-gray-500 truncate mt-0.5">
-                          {community.description}
+              subreddits.slice(0, 10).map((community, index) => {
+                const communityStats = communities?.find(c => c.id === community.id);
+                return (
+                  <div 
+                    key={community.id}
+                    className="group flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                    onClick={() => handleCommunityClick(community.name)}
+                  >
+                    <div className="flex items-center space-x-2 lg:space-x-3 min-w-0 flex-1">
+                      <span className="text-xs lg:text-sm font-medium text-gray-400">{index + 1}</span>
+                      <Hash className="h-4 w-4 text-orange-500 flex-shrink-0" />
+                      <div className="min-w-0 flex-1">
+                        <div className="font-medium text-xs lg:text-sm truncate group-hover:text-orange-600 transition-colors">
+                          r/{community.name}
                         </div>
+                        {community.description && (
+                          <div className="text-xs text-gray-500 truncate mt-0.5">
+                            {community.description}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-1 flex-shrink-0">
+                      {!communityStats?.is_member && (
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="text-xs h-6 lg:h-7 px-2 lg:px-3 opacity-0 group-hover:opacity-100 transition-opacity"
+                          disabled={isJoining}
+                          onClick={(e) => handleJoinCommunity(e, community.id)}
+                        >
+                          {isJoining ? 'Caricamento...' : 'Unisciti'}
+                        </Button>
+                      )}
+                      {communityStats?.is_member && (
+                        <span className="text-xs text-green-600 font-medium">Iscritto</span>
                       )}
                     </div>
                   </div>
-                  <div className="flex items-center space-x-1 flex-shrink-0">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="text-xs h-6 lg:h-7 px-2 lg:px-3 opacity-0 group-hover:opacity-100 transition-opacity"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        // TODO: Implement join/leave functionality
-                        console.log(`Joining community: ${community.name}`);
-                      }}
-                    >
-                      Unisciti
-                    </Button>
-                  </div>
-                </div>
-              ))
+                );
+              })
             ) : (
               <div className="text-center py-4 lg:py-6">
                 <Hash className="h-8 w-8 text-gray-300 mx-auto mb-2" />

@@ -20,6 +20,23 @@ export const useCommunityManagement = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
+  // Get user's community memberships
+  const { data: userMemberships } = useQuery({
+    queryKey: ['user-memberships', user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      
+      const { data, error } = await supabase
+        .from('community_memberships')
+        .select('subreddit_id')
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+      return data.map(m => m.subreddit_id);
+    },
+    enabled: !!user,
+  });
+
   // Get communities with additional statistics
   const { data: communities, isLoading } = useQuery({
     queryKey: ['communities-with-stats'],
@@ -31,46 +48,92 @@ export const useCommunityManagement = () => {
 
       if (error) throw error;
 
-      // TODO: In future, we can add actual member counts and post counts
-      // For now, we'll return the basic data
-      return subreddits.map(subreddit => ({
-        ...subreddit,
-        member_count: Math.floor(Math.random() * 1000) + 1, // Mock data for now
-        post_count: Math.floor(Math.random() * 50) + 1, // Mock data for now
-        is_member: false, // TODO: Implement actual membership logic
-      })) as CommunityWithStats[];
+      // Get member counts for each community
+      const communitiesWithStats = await Promise.all(
+        subreddits.map(async (subreddit) => {
+          const { count: memberCount } = await supabase
+            .from('community_memberships')
+            .select('*', { count: 'exact', head: true })
+            .eq('subreddit_id', subreddit.id);
+
+          const { count: postCount } = await supabase
+            .from('posts')
+            .select('*', { count: 'exact', head: true })
+            .eq('subreddit_id', subreddit.id);
+
+          return {
+            ...subreddit,
+            member_count: memberCount || 0,
+            post_count: postCount || 0,
+            is_member: userMemberships?.includes(subreddit.id) || false,
+          };
+        })
+      );
+
+      return communitiesWithStats as CommunityWithStats[];
     },
   });
 
-  // Join a community (placeholder for future implementation)
+  // Join a community
   const joinCommunity = useMutation({
     mutationFn: async (communityId: string) => {
       if (!user) throw new Error('User not authenticated');
       
-      // TODO: Implement actual join logic when membership table is created
-      console.log('Joining community:', communityId);
-      
-      // For now, just show a success message
-      toast({
-        title: "Funzionalità in arrivo!",
-        description: "La possibilità di unirsi alle comunità sarà disponibile presto.",
-      });
+      const { error } = await supabase
+        .from('community_memberships')
+        .insert({
+          user_id: user.id,
+          subreddit_id: communityId,
+        });
+
+      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['communities-with-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['user-memberships'] });
+      toast({
+        title: "Iscrizione completata!",
+        description: "Ti sei iscritto alla comunità con successo.",
+      });
+    },
+    onError: (error) => {
+      console.error('Error joining community:', error);
+      toast({
+        title: "Errore",
+        description: "Non è stato possibile iscriversi alla comunità.",
+        variant: "destructive",
+      });
     },
   });
 
-  // Leave a community (placeholder for future implementation)
+  // Leave a community
   const leaveCommunity = useMutation({
     mutationFn: async (communityId: string) => {
       if (!user) throw new Error('User not authenticated');
       
-      // TODO: Implement actual leave logic when membership table is created
-      console.log('Leaving community:', communityId);
+      const { error } = await supabase
+        .from('community_memberships')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('subreddit_id', communityId);
+
+      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['communities-with-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['user-memberships'] });
+      toast({
+        title: "Iscrizione cancellata",
+        description: "Hai lasciato la comunità con successo.",
+      });
+    },
+    onError: (error) => {
+      console.error('Error leaving community:', error);
+      toast({
+        title: "Errore",
+        description: "Non è stato possibile lasciare la comunità.",
+        variant: "destructive",
+      });
     },
   });
 
@@ -89,7 +152,7 @@ export const useCommunityManagement = () => {
     return communities?.sort((a, b) => (b.member_count || 0) - (a.member_count || 0)) || [];
   };
 
-  // Get user's communities (if they were a member)
+  // Get user's communities (if they are a member)
   const getUserCommunities = () => {
     return communities?.filter(community => community.is_member) || [];
   };

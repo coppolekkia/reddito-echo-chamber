@@ -106,6 +106,35 @@ export type Database = {
           },
         ]
       }
+      community_memberships: {
+        Row: {
+          id: string
+          joined_at: string
+          subreddit_id: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          joined_at?: string
+          subreddit_id: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          joined_at?: string
+          subreddit_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_memberships_subreddit_id_fkey"
+            columns: ["subreddit_id"]
+            isOneToOne: false
+            referencedRelation: "subreddits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       posts: {
         Row: {
           author_id: string
