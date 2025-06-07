@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
+import { RichTextEditor } from '@/components/RichTextEditor';
 import { useAuth } from '@/hooks/useAuth';
 import { useSubreddits } from '@/hooks/useSubreddits';
 import { supabase } from '@/integrations/supabase/client';
@@ -32,7 +32,6 @@ export const CreatePost = () => {
   const [showCreateCommunity, setShowCreateCommunity] = useState(false);
   const queryClient = useQueryClient();
 
-  // Set default subreddit when subreddits load
   useEffect(() => {
     if (subreddits && subreddits.length > 0 && !selectedSubredditId) {
       setSelectedSubredditId(subreddits[0].id);
@@ -42,7 +41,7 @@ export const CreatePost = () => {
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      if (file.size > 5 * 1024 * 1024) {
         toast({
           title: "Errore",
           description: "L'immagine non può superare i 5MB",
@@ -133,7 +132,9 @@ export const CreatePost = () => {
 
     setIsEnhancing(true);
     try {
-      const result = await GeminiService.enhancePostContent(title, content, url);
+      // Strip HTML tags for AI processing
+      const plainTextContent = content.replace(/<[^>]*>/g, '');
+      const result = await GeminiService.enhancePostContent(title, plainTextContent, url);
       
       if (result.success && result.data) {
         setContent(result.data);
@@ -204,7 +205,6 @@ export const CreatePost = () => {
     try {
       let imageUrl = null;
       
-      // Handle image upload for image posts
       if (postType === 'image' && selectedImage) {
         imageUrl = await uploadImage(selectedImage);
         if (!imageUrl) {
@@ -217,7 +217,6 @@ export const CreatePost = () => {
         }
       }
       
-      // For link posts, try to use the scraped image if no manual image was uploaded
       if (postType === 'link' && !imageUrl && url) {
         try {
           const scrapingResult = await ScrapingService.scrapeUrl(url);
@@ -229,7 +228,6 @@ export const CreatePost = () => {
         }
       }
 
-      // Prepare content based on post type
       let postContent = content;
       if (postType === 'link' && url) {
         postContent = `${content}\n\nLink: ${url}`;
@@ -455,11 +453,13 @@ export const CreatePost = () => {
             </div>
             
             <div>
-              <Textarea
-                placeholder={postType === 'link' ? "Descrizione del link (opzionale)" : "Contenuto (opzionale)"}
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                {postType === 'link' ? "Descrizione del link (opzionale)" : "Contenuto (opzionale)"}
+              </label>
+              <RichTextEditor
                 value={content}
-                onChange={(e) => setContent(e.target.value)}
-                rows={4}
+                onChange={setContent}
+                placeholder={postType === 'link' ? "Descrizione del link..." : "Scrivi il contenuto del tuo post..."}
               />
             </div>
 
