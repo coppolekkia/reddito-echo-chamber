@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -316,19 +317,34 @@ export const RichTextEditor = ({ value, onChange, placeholder = "Scrivi qui...",
         contentEditable
         onInput={handleInput}
         className={`min-h-[120px] p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent ${className}`}
-        style={{ wordWrap: 'break-word', whiteSpace: 'pre-wrap' }}
+        style={{ 
+          wordWrap: 'break-word', 
+          whiteSpace: 'pre-wrap'
+        }}
         data-placeholder={placeholder}
         suppressContentEditableWarning={true}
+        onFocus={(e) => {
+          if (e.target.textContent === '') {
+            e.target.style.color = '#000';
+          }
+        }}
+        onBlur={(e) => {
+          if (e.target.textContent === '') {
+            e.target.style.color = '#9ca3af';
+          }
+        }}
       />
       
-      {/* Custom styles for placeholder */}
-      <style jsx>{`
-        [contenteditable]:empty:before {
-          content: attr(data-placeholder);
-          color: #9ca3af;
-          pointer-events: none;
-        }
-      `}</style>
+      {/* Placeholder styling using a style element without jsx */}
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          [contenteditable]:empty:before {
+            content: attr(data-placeholder);
+            color: #9ca3af;
+            pointer-events: none;
+          }
+        `
+      }} />
     </Card>
   );
 };
