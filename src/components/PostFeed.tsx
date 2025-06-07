@@ -8,11 +8,13 @@ import { usePostSorting, SortType } from "@/hooks/usePostSorting";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export const PostFeed = () => {
   const { data: posts, isLoading, error } = usePosts();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const { sortType, setSortType, sortedPosts } = usePostSorting(posts);
 
   const getSortIcon = (type: SortType) => {
@@ -63,11 +65,11 @@ export const PostFeed = () => {
       <BannerDisplay position="popup" />
       
       {user ? (
-        <div className="mb-4 lg:mb-6">
+        <div className={`${isMobile ? 'mb-3' : 'mb-4 lg:mb-6'}`}>
           <CreatePost />
         </div>
       ) : (
-        <div className="mb-4 lg:mb-6 p-3 lg:p-4 bg-white border border-gray-200 rounded-lg">
+        <div className={`${isMobile ? 'mb-3 p-3' : 'mb-4 lg:mb-6 p-3 lg:p-4'} bg-white border border-gray-200 rounded-lg`}>
           <p className="text-gray-600 text-center mb-3 text-sm lg:text-base">
             Accedi per creare un nuovo post
           </p>
@@ -80,26 +82,27 @@ export const PostFeed = () => {
         </div>
       )}
       
-      {/* Filtri post - funzionali e responsive */}
-      <div className="mb-4 lg:mb-6">
-        <div className="flex items-center space-x-2 lg:space-x-4 mb-4 overflow-x-auto pb-2">
+      {/* Filtri post - ottimizzati per mobile */}
+      <div className={`${isMobile ? 'mb-3' : 'mb-4 lg:mb-6'}`}>
+        <div className={`flex items-center ${isMobile ? 'space-x-1 px-1' : 'space-x-2 lg:space-x-4'} mb-3 overflow-x-auto pb-2 scrollbar-hide`}>
           {sortTypes.map((type) => (
             <button
               key={type}
               onClick={() => setSortType(type)}
-              className={`px-3 lg:px-4 py-1.5 lg:py-2 rounded-full text-xs lg:text-sm font-medium whitespace-nowrap transition-colors ${
+              className={`${isMobile ? 'px-2 py-1 text-xs' : 'px-3 lg:px-4 py-1.5 lg:py-2 text-xs lg:text-sm'} rounded-full font-medium whitespace-nowrap transition-colors flex-shrink-0 ${
                 sortType === type
                   ? 'bg-orange-500 text-white border border-orange-500'
                   : 'bg-white border border-gray-300 text-gray-600 hover:bg-gray-50'
               }`}
             >
-              {getSortIcon(type)} {getSortLabel(type)}
+              <span className={`${isMobile ? 'mr-1' : 'mr-1.5'}`}>{getSortIcon(type)}</span>
+              {getSortLabel(type)}
             </button>
           ))}
         </div>
         
         {/* Badge per mostrare il filtro attivo */}
-        <div className="flex items-center justify-between">
+        <div className={`flex items-center justify-between ${isMobile ? 'px-1' : ''}`}>
           <Badge variant="secondary" className="text-xs">
             Ordinamento: {getSortLabel(sortType)}
           </Badge>

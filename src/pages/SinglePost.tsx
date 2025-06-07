@@ -63,7 +63,7 @@ export default function SinglePost() {
       {/* Banner popup */}
       <BannerDisplay position="popup" />
       
-      <div className={`max-w-4xl mx-auto px-2 sm:px-4 py-4 sm:py-8 ${isMobile ? 'pb-20' : ''}`}>
+      <div className={`max-w-4xl mx-auto ${isMobile ? 'px-3 py-3 pb-20' : 'px-2 sm:px-4 py-4 sm:py-8'}`}>
         <PostCard 
           id={post.id}
           title={post.title}
@@ -78,11 +78,11 @@ export default function SinglePost() {
         />
         
         {/* Banner interno al post */}
-        <div className="my-6">
+        <div className={`${isMobile ? 'my-4' : 'my-6'}`}>
           <BannerDisplay position="inside-post" />
         </div>
         
-        <div className="mt-6">
+        <div className={`${isMobile ? 'mt-4' : 'mt-6'}`}>
           <CommentSection postId={post.id} />
         </div>
       </div>

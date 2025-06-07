@@ -41,8 +41,8 @@ export const PostCard = ({
   const netVotes = upvotes - downvotes;
   
   // Check if content is too long for mobile
-  const isContentLong = content && content.length > 200;
-  const shouldTruncate = isMobile && isContentLong && !isExpanded;
+  const isContentLong = content && content.length > (isMobile ? 150 : 200);
+  const shouldTruncate = isContentLong && !isExpanded;
   
   const handleVote = async (voteType: 'up' | 'down') => {
     if (!user) return;
@@ -50,41 +50,41 @@ export const PostCard = ({
   };
 
   const displayContent = shouldTruncate 
-    ? content.substring(0, 200) + '...'
+    ? content.substring(0, isMobile ? 150 : 200) + '...'
     : content;
 
   return (
-    <Card className="mb-4 overflow-hidden">
+    <Card className={`${isMobile ? 'mb-2' : 'mb-4'} overflow-hidden`}>
       <div className="flex">
-        {/* Vote buttons */}
-        <div className="flex flex-col items-center p-2 bg-gray-50 min-w-[60px]">
+        {/* Vote buttons - Ottimizzati per mobile */}
+        <div className={`flex flex-col items-center bg-gray-50 ${isMobile ? 'p-1.5 min-w-[50px]' : 'p-2 min-w-[60px]'}`}>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => handleVote('up')}
-            className="p-1 h-8 w-8 text-gray-600 hover:text-orange-500 hover:bg-orange-50"
+            className={`p-1 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'} text-gray-600 hover:text-orange-500 hover:bg-orange-50`}
             disabled={!user}
           >
-            <ChevronUp className="h-5 w-5" />
+            <ChevronUp className={`${isMobile ? 'h-4 w-4' : 'h-5 w-5'}`} />
           </Button>
-          <span className={`text-sm font-medium ${netVotes > 0 ? 'text-orange-500' : netVotes < 0 ? 'text-blue-500' : 'text-gray-500'}`}>
+          <span className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium ${netVotes > 0 ? 'text-orange-500' : netVotes < 0 ? 'text-blue-500' : 'text-gray-500'}`}>
             {netVotes}
           </span>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => handleVote('down')}
-            className="p-1 h-8 w-8 text-gray-600 hover:text-blue-500 hover:bg-blue-50"
+            className={`p-1 ${isMobile ? 'h-6 w-6' : 'h-8 w-8'} text-gray-600 hover:text-blue-500 hover:bg-blue-50`}
             disabled={!user}
           >
-            <ChevronDown className="h-5 w-5" />
+            <ChevronDown className={`${isMobile ? 'h-4 w-4' : 'h-5 w-5'}`} />
           </Button>
         </div>
 
-        {/* Content */}
-        <div className="flex-1 p-4">
+        {/* Content - Ottimizzato per mobile */}
+        <div className={`flex-1 ${isMobile ? 'p-3' : 'p-4'}`}>
           {/* Header */}
-          <div className="flex items-center text-sm text-gray-500 mb-2">
+          <div className={`flex items-center text-gray-500 mb-2 ${isMobile ? 'text-xs flex-wrap' : 'text-sm'}`}>
             <Link 
               to={`/r/${subreddit}`} 
               className="hover:underline font-medium"
@@ -92,23 +92,28 @@ export const PostCard = ({
               r/{subreddit}
             </Link>
             <span className="mx-1">•</span>
-            <span>Pubblicato da u/{author}</span>
+            <span className={`${isMobile ? 'truncate' : ''}`}>u/{author}</span>
             <span className="mx-1">•</span>
-            <span>{timeAgo}</span>
+            <span className={`${isMobile ? 'text-xs' : ''}`}>
+              {isMobile ? 
+                new Date(timeAgo).toLocaleDateString('it-IT', { month: 'short', day: 'numeric' }) :
+                timeAgo
+              }
+            </span>
           </div>
 
           {/* Title */}
           <Link to={`/post/${id}`}>
-            <h2 className="text-lg font-semibold text-gray-900 hover:text-blue-600 mb-2 line-clamp-2">
+            <h2 className={`${isMobile ? 'text-base' : 'text-lg'} font-semibold text-gray-900 hover:text-blue-600 mb-2 line-clamp-2`}>
               {title}
             </h2>
           </Link>
 
           {/* Content with rich text support */}
           {content && (
-            <div className="text-gray-700 mb-3">
+            <div className={`text-gray-700 ${isMobile ? 'mb-2' : 'mb-3'}`}>
               <div 
-                className="prose prose-sm max-w-none"
+                className={`prose max-w-none ${isMobile ? 'prose-xs' : 'prose-sm'}`}
                 dangerouslySetInnerHTML={{ 
                   __html: displayContent 
                 }}
@@ -117,7 +122,7 @@ export const PostCard = ({
                 <Button
                   variant="link"
                   onClick={() => setIsExpanded(true)}
-                  className="text-blue-600 hover:text-blue-800 p-0 h-auto text-sm mt-2"
+                  className={`text-blue-600 hover:text-blue-800 p-0 h-auto mt-2 ${isMobile ? 'text-xs' : 'text-sm'}`}
                 >
                   Leggi di più
                 </Button>
@@ -126,7 +131,7 @@ export const PostCard = ({
                 <Button
                   variant="link"
                   onClick={() => setIsExpanded(false)}
-                  className="text-blue-600 hover:text-blue-800 p-0 h-auto text-sm mt-2 ml-2"
+                  className={`text-blue-600 hover:text-blue-800 p-0 h-auto mt-2 ml-2 ${isMobile ? 'text-xs' : 'text-sm'}`}
                 >
                   Mostra meno
                 </Button>
@@ -136,7 +141,7 @@ export const PostCard = ({
 
           {/* Image */}
           {image_url && (
-            <div className="mb-3">
+            <div className={`${isMobile ? 'mb-2' : 'mb-3'}`}>
               <img 
                 src={image_url} 
                 alt="" 
@@ -146,24 +151,25 @@ export const PostCard = ({
             </div>
           )}
 
-          {/* Actions */}
-          <div className="flex items-center space-x-4 text-sm text-gray-500">
+          {/* Actions - Ottimizzate per mobile */}
+          <div className={`flex items-center text-gray-500 ${isMobile ? 'space-x-2 text-xs' : 'space-x-4 text-sm'}`}>
             <Link to={`/post/${id}`}>
-              <Button variant="ghost" size="sm" className="h-8 px-2">
-                <MessageCircle className="h-4 w-4 mr-1" />
-                {comments} commenti
+              <Button variant="ghost" size="sm" className={`${isMobile ? 'h-6 px-1' : 'h-8 px-2'}`}>
+                <MessageCircle className={`${isMobile ? 'h-3 w-3 mr-0.5' : 'h-4 w-4 mr-1'}`} />
+                <span className={`${isMobile ? 'hidden' : ''}`}>{comments} commenti</span>
+                {isMobile && <span>{comments}</span>}
               </Button>
             </Link>
-            <Button variant="ghost" size="sm" className="h-8 px-2">
-              <Share className="h-4 w-4 mr-1" />
-              Condividi
+            <Button variant="ghost" size="sm" className={`${isMobile ? 'h-6 px-1' : 'h-8 px-2'}`}>
+              <Share className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4 mr-1'}`} />
+              {!isMobile && <span>Condividi</span>}
             </Button>
-            <Button variant="ghost" size="sm" className="h-8 px-2">
-              <Bookmark className="h-4 w-4 mr-1" />
-              Salva
+            <Button variant="ghost" size="sm" className={`${isMobile ? 'h-6 px-1' : 'h-8 px-2'}`}>
+              <Bookmark className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4 mr-1'}`} />
+              {!isMobile && <span>Salva</span>}
             </Button>
-            <Button variant="ghost" size="sm" className="h-8 px-2">
-              <MoreHorizontal className="h-4 w-4" />
+            <Button variant="ghost" size="sm" className={`${isMobile ? 'h-6 px-1' : 'h-8 px-2'}`}>
+              <MoreHorizontal className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
             </Button>
           </div>
         </div>

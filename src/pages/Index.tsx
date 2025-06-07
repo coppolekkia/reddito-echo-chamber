@@ -14,11 +14,11 @@ const Index = () => {
       <Header />
       
       {/* Banner Top */}
-      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 pt-2">
+      <div className={`max-w-7xl mx-auto ${isMobile ? 'px-3 pt-1' : 'px-2 sm:px-4 lg:px-8 pt-2'}`}>
         <BannerDisplay position="top" />
       </div>
       
-      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-2 sm:py-6">
+      <div className={`max-w-7xl mx-auto ${isMobile ? 'px-3 py-2' : 'px-2 sm:px-4 lg:px-8 py-2 sm:py-6'}`}>
         <div className={`flex ${isMobile ? 'flex-col' : 'gap-4 xl:gap-6'}`}>
           {/* Main content area - responsive width */}
           <div className={`${isMobile ? 'order-1 pb-20' : 'flex-1 min-w-0'} max-w-full`}>
@@ -26,7 +26,7 @@ const Index = () => {
             
             {/* Banner Bottom - solo su mobile */}
             {isMobile && (
-              <div className="mt-6">
+              <div className="mt-4">
                 <BannerDisplay position="bottom" />
               </div>
             )}
