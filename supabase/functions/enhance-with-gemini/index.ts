@@ -28,8 +28,19 @@ serve(async (req) => {
       });
     }
 
-    // Costruisci il prompt per Gemini
-    let geminiPrompt = prompt || 'Analizza e approfondisci questo contenuto fornendo contesto aggiuntivo, punti chiave e insights interessanti.';
+    // Costruisci il prompt per Gemini con istruzioni specifiche per formattazione e SEO
+    let geminiPrompt = prompt || `Analizza e approfondisci questo contenuto fornendo un'analisi completa e ben strutturata.
+
+ISTRUZIONI DI FORMATTAZIONE E SEO:
+- Usa il grassetto (<strong>) per evidenziare i punti chiave
+- Organizza in paragrafi chiari (<p>)
+- Crea sottosezioni con titoli quando necessario
+- Usa elenchi per migliorare la leggibilità
+- Includi parole chiave rilevanti per SEO
+- Mantieni un tono informativo e coinvolgente
+- Struttura per ottimizzare engagement e SEO
+
+FORMATO OUTPUT: HTML ben formattato.`;
     
     if (title) {
       geminiPrompt += `\n\nTitolo: ${title}`;
@@ -43,7 +54,7 @@ serve(async (req) => {
       geminiPrompt += `\n\nURL di riferimento: ${url}`;
     }
 
-    console.log('Using Gemini API with prompt:', geminiPrompt.substring(0, 100) + '...');
+    console.log('Using Gemini API with enhanced formatting prompt');
 
     // Nuovo endpoint corretto per Gemini API
     const apiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`;
@@ -63,7 +74,7 @@ serve(async (req) => {
           temperature: 0.7,
           topK: 40,
           topP: 0.95,
-          maxOutputTokens: 1024,
+          maxOutputTokens: 2048, // Increased for more detailed content
         },
         safetySettings: [
           {
@@ -95,7 +106,7 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    console.log('Gemini API response data:', JSON.stringify(data, null, 2));
+    console.log('Gemini API response received');
     
     if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) {
       const enhancedContent = data.candidates[0].content.parts[0].text;
