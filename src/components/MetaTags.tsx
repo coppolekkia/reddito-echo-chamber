@@ -7,6 +7,9 @@ interface MetaTagsProps {
   image?: string;
   url?: string;
   type?: string;
+  imageAlt?: string;
+  siteName?: string;
+  author?: string;
 }
 
 export const MetaTags = ({ 
@@ -14,7 +17,10 @@ export const MetaTags = ({
   description = "A modern Reddit clone built with React",
   image = "https://lovable.dev/opengraph-image-p98pqg.png",
   url = window.location.href,
-  type = "website"
+  type = "website",
+  imageAlt = "Coppolek - Social sharing image",
+  siteName = "Coppolek",
+  author
 }: MetaTagsProps) => {
   useEffect(() => {
     // Update document title
@@ -37,27 +43,46 @@ export const MetaTags = ({
       meta.setAttribute('content', content);
     };
 
-    // Update OpenGraph tags
+    // Update basic meta tags
+    updateMetaTag('description', description, false);
+
+    // Update OpenGraph tags for better social sharing
     updateMetaTag('og:title', title);
     updateMetaTag('og:description', description);
     updateMetaTag('og:image', image);
+    updateMetaTag('og:image:alt', imageAlt);
     updateMetaTag('og:url', url);
     updateMetaTag('og:type', type);
+    updateMetaTag('og:site_name', siteName);
+    updateMetaTag('og:locale', 'it_IT');
+    
+    // Add image dimensions for better rendering
+    updateMetaTag('og:image:width', '1200');
+    updateMetaTag('og:image:height', '630');
 
-    // Update Twitter tags
+    // Update Twitter Card tags for better Twitter sharing
+    updateMetaTag('twitter:card', 'summary_large_image', false);
     updateMetaTag('twitter:title', title, false);
     updateMetaTag('twitter:description', description, false);
     updateMetaTag('twitter:image', image, false);
-    updateMetaTag('twitter:card', 'summary_large_image', false);
+    updateMetaTag('twitter:image:alt', imageAlt, false);
+    updateMetaTag('twitter:site', '@coppolek', false);
+    
+    // Add author if provided
+    if (author) {
+      updateMetaTag('twitter:creator', `@${author}`, false);
+      updateMetaTag('article:author', author);
+    }
 
-    // Update description meta tag
-    updateMetaTag('description', description, false);
+    // Add additional meta tags for better SEO and social sharing
+    updateMetaTag('robots', 'index, follow', false);
+    updateMetaTag('viewport', 'width=device-width, initial-scale=1.0', false);
 
     // Cleanup function to reset to defaults when component unmounts
     return () => {
       document.title = "Coppolek - The Front Page of the Internet";
     };
-  }, [title, description, image, url, type]);
+  }, [title, description, image, url, type, imageAlt, siteName, author]);
 
   return null; // This component doesn't render anything
 };

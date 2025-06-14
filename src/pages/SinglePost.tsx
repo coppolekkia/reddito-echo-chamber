@@ -41,13 +41,14 @@ export default function SinglePost() {
     );
   }
 
-  // Prepare meta tags data
+  // Prepare optimized meta tags data for social sharing
   const postTitle = `${post.title} - r/${post.subreddits.name}`;
   const postDescription = post.content ? 
-    post.content.substring(0, 160) + (post.content.length > 160 ? '...' : '') : 
-    `Post di u/${post.profiles.username} in r/${post.subreddits.name}`;
+    post.content.substring(0, 160).replace(/<[^>]*>/g, '') + (post.content.length > 160 ? '...' : '') : 
+    `Post condiviso da u/${post.profiles.username} nella comunità r/${post.subreddits.name}`;
   const postImage = post.image_url || 'https://lovable.dev/opengraph-image-p98pqg.png';
   const postUrl = `${window.location.origin}/post/${post.id}`;
+  const imageAlt = post.image_url ? `Immagine del post: ${post.title}` : 'Coppolek - Social sharing image';
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -55,8 +56,11 @@ export default function SinglePost() {
         title={postTitle}
         description={postDescription}
         image={postImage}
+        imageAlt={imageAlt}
         url={postUrl}
         type="article"
+        siteName="Coppolek"
+        author={post.profiles.username}
       />
       <Header />
       

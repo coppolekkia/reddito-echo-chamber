@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useVote } from '@/hooks/usePosts';
 import { Link } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { toast } from '@/components/ui/use-toast';
 
 interface PostCardProps {
   id: string;
@@ -47,6 +47,34 @@ export const PostCard = ({
   const handleVote = async (voteType: 'up' | 'down') => {
     if (!user) return;
     await vote(id, voteType, user.id);
+  };
+
+  const handleShare = async () => {
+    const postUrl = `${window.location.origin}/post/${id}`;
+    const shareData = {
+      title: `${title} - r/${subreddit}`,
+      text: content ? content.substring(0, 100) + '...' : `Post di u/${author} in r/${subreddit}`,
+      url: postUrl,
+    };
+
+    try {
+      if (navigator.share && isMobile) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(postUrl);
+        toast({
+          title: "Link copiato!",
+          description: "Il link del post è stato copiato negli appunti.",
+        });
+      }
+    } catch (error) {
+      console.error('Error sharing:', error);
+      toast({
+        title: "Errore",
+        description: "Non è stato possibile condividere il post.",
+        variant: "destructive",
+      });
+    }
   };
 
   const displayContent = shouldTruncate 
@@ -144,7 +172,7 @@ export const PostCard = ({
             <div className={`${isMobile ? 'mb-2' : 'mb-3'}`}>
               <img 
                 src={image_url} 
-                alt="" 
+                alt={`Immagine del post: ${title}`}
                 className="max-w-full h-auto rounded-lg"
                 loading="lazy"
               />
@@ -160,7 +188,12 @@ export const PostCard = ({
                 {isMobile && <span>{comments}</span>}
               </Button>
             </Link>
-            <Button variant="ghost" size="sm" className={`${isMobile ? 'h-6 px-1' : 'h-8 px-2'}`}>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className={`${isMobile ? 'h-6 px-1' : 'h-8 px-2'}`}
+              onClick={handleShare}
+            >
               <Share className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4 mr-1'}`} />
               {!isMobile && <span>Condividi</span>}
             </Button>
