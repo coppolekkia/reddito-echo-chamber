@@ -7,9 +7,10 @@ import { AdminPostManagement } from "@/components/admin/AdminPostManagement";
 import { AdminStats } from "@/components/admin/AdminStats";
 import { AdminAdvancedStats } from "@/components/admin/AdminAdvancedStats";
 import { AdminBannerManagement } from "@/components/admin/AdminBannerManagement";
+import { AdminAdSenseConfig } from "@/components/admin/AdminAdSenseConfig";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Shield, Users, FileText, BarChart3, Megaphone, TrendingUp } from "lucide-react";
+import { Shield, Users, FileText, BarChart3, Megaphone, TrendingUp, DollarSign } from "lucide-react";
 import { Navigate } from "react-router-dom";
 
 const Admin = () => {
@@ -64,7 +65,7 @@ const Admin = () => {
         </div>
 
         <Tabs defaultValue="stats" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="stats" className="flex items-center gap-2">
               <BarChart3 className="h-4 w-4" />
               Statistiche
@@ -84,6 +85,10 @@ const Admin = () => {
             <TabsTrigger value="banners" className="flex items-center gap-2">
               <Megaphone className="h-4 w-4" />
               Banner
+            </TabsTrigger>
+            <TabsTrigger value="adsense" className="flex items-center gap-2">
+              <DollarSign className="h-4 w-4" />
+              AdSense
             </TabsTrigger>
           </TabsList>
 
@@ -105,6 +110,10 @@ const Admin = () => {
 
           <TabsContent value="banners">
             <AdminBannerManagement />
+          </TabsContent>
+
+          <TabsContent value="adsense">
+            <AdminAdSenseConfig />
           </TabsContent>
         </Tabs>
       </div>
