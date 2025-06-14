@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -58,22 +59,46 @@ export const PostCard = ({
     };
 
     try {
+      // Check if Web Share API is available and if we're on mobile
       if (navigator.share && isMobile) {
-        await navigator.share(shareData);
-      } else {
-        await navigator.clipboard.writeText(postUrl);
+        // Try to use Web Share API, but handle permission errors
+        try {
+          await navigator.share(shareData);
+          return; // Success, exit early
+        } catch (shareError) {
+          // If share fails, fall back to clipboard
+          console.log('Web Share API failed, falling back to clipboard:', shareError);
+        }
+      }
+      
+      // Fallback: copy to clipboard
+      await navigator.clipboard.writeText(postUrl);
+      toast({
+        title: "Link copiato!",
+        description: "Il link del post è stato copiato negli appunti.",
+      });
+    } catch (error) {
+      console.error('Error sharing:', error);
+      // Final fallback: try to select the URL in a temporary input
+      try {
+        const textArea = document.createElement('textarea');
+        textArea.value = postUrl;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        
         toast({
           title: "Link copiato!",
           description: "Il link del post è stato copiato negli appunti.",
         });
+      } catch (fallbackError) {
+        toast({
+          title: "Errore",
+          description: "Non è stato possibile condividere il post. Prova a copiare manualmente l'URL.",
+          variant: "destructive",
+        });
       }
-    } catch (error) {
-      console.error('Error sharing:', error);
-      toast({
-        title: "Errore",
-        description: "Non è stato possibile condividere il post.",
-        variant: "destructive",
-      });
     }
   };
 
