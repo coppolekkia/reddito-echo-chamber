@@ -230,24 +230,30 @@ export type Database = {
       }
       subreddits: {
         Row: {
+          cover_image_url: string | null
           created_at: string
           creator_id: string | null
           description: string | null
           id: string
+          logo_url: string | null
           name: string
         }
         Insert: {
+          cover_image_url?: string | null
           created_at?: string
           creator_id?: string | null
           description?: string | null
           id?: string
+          logo_url?: string | null
           name: string
         }
         Update: {
+          cover_image_url?: string | null
           created_at?: string
           creator_id?: string | null
           description?: string | null
           id?: string
+          logo_url?: string | null
           name?: string
         }
         Relationships: [

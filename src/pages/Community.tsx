@@ -73,44 +73,72 @@ export default function CommunityPage() {
       {/* Banner popup */}
       <BannerDisplay position="popup" />
       
-      {/* Community Header - Ottimizzato per mobile */}
+      {/* Cover Image */}
+      {community.cover_image_url && (
+        <div className="relative w-full h-48 sm:h-64">
+          <img 
+            src={community.cover_image_url} 
+            alt={`Copertina di r/${community.name}`}
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-black bg-opacity-20"></div>
+        </div>
+      )}
+      
+      {/* Community Header */}
       <div className="bg-white border-b border-gray-200">
         <div className={`max-w-7xl mx-auto ${isMobile ? 'px-3 py-4' : 'px-2 sm:px-4 lg:px-8 py-4 sm:py-6'}`}>
           <div className={`${isMobile ? 'space-y-3' : 'flex items-center justify-between'}`}>
-            <div className={`${isMobile ? 'space-y-2' : ''}`}>
-              <h1 className={`${isMobile ? 'text-xl' : 'text-2xl lg:text-3xl'} font-bold text-gray-900`}>
-                r/{community.name}
-              </h1>
-              {community.description && (
-                <p className={`text-gray-600 ${isMobile ? 'text-sm' : 'mt-2'}`}>
-                  {community.description}
-                </p>
+            <div className={`${isMobile ? 'space-y-3' : 'flex items-center space-x-4'}`}>
+              {/* Logo */}
+              {community.logo_url && (
+                <div className={`${isMobile ? 'flex justify-center' : ''}`}>
+                  <img 
+                    src={community.logo_url} 
+                    alt={`Logo di r/${community.name}`}
+                    className={`${isMobile ? 'w-16 h-16' : 'w-20 h-20'} object-cover rounded-full border-4 border-white shadow-lg ${community.cover_image_url ? '-mt-10' : ''}`}
+                  />
+                </div>
               )}
-              <div className={`flex items-center ${isMobile ? 'space-x-2 flex-wrap' : 'space-x-4 mt-3'}`}>
-                <Badge variant="secondary" className={`flex items-center space-x-1 ${isMobile ? 'text-xs' : ''}`}>
-                  <Users className="h-3 w-3" />
-                  <span>Membri: {communityWithStats?.member_count || 0}</span>
-                </Badge>
-                <Badge variant="outline" className={`flex items-center space-x-1 ${isMobile ? 'text-xs' : ''}`}>
-                  <Calendar className="h-3 w-3" />
-                  <span>
-                    {isMobile ? 
-                      new Date(community.created_at).toLocaleDateString('it-IT', { month: 'short', year: '2-digit' }) :
-                      `Creata: ${new Date(community.created_at).toLocaleDateString('it-IT')}`
-                    }
-                  </span>
-                </Badge>
+              
+              <div className={`${isMobile ? 'text-center' : 'flex-1'}`}>
+                <h1 className={`${isMobile ? 'text-xl' : 'text-2xl lg:text-3xl'} font-bold text-gray-900`}>
+                  r/{community.name}
+                </h1>
+                {community.description && (
+                  <p className={`text-gray-600 ${isMobile ? 'text-sm mt-2' : 'mt-2'}`}>
+                    {community.description}
+                  </p>
+                )}
+                <div className={`flex items-center ${isMobile ? 'justify-center space-x-2 flex-wrap mt-2' : 'space-x-4 mt-3'}`}>
+                  <Badge variant="secondary" className={`flex items-center space-x-1 ${isMobile ? 'text-xs' : ''}`}>
+                    <Users className="h-3 w-3" />
+                    <span>Membri: {communityWithStats?.member_count || 0}</span>
+                  </Badge>
+                  <Badge variant="outline" className={`flex items-center space-x-1 ${isMobile ? 'text-xs' : ''}`}>
+                    <Calendar className="h-3 w-3" />
+                    <span>
+                      {isMobile ? 
+                        new Date(community.created_at).toLocaleDateString('it-IT', { month: 'short', year: '2-digit' }) :
+                        `Creata: ${new Date(community.created_at).toLocaleDateString('it-IT')}`
+                      }
+                    </span>
+                  </Badge>
+                </div>
               </div>
             </div>
-            <Button 
-              onClick={handleJoinLeave}
-              disabled={isJoining || isLeaving}
-              variant={communityWithStats?.is_member ? "outline" : "default"}
-              className={`${isMobile ? 'w-full' : ''}`}
-            >
-              {isJoining || isLeaving ? 'Caricamento...' : 
-               communityWithStats?.is_member ? 'Lascia' : 'Unisciti'}
-            </Button>
+            
+            <div className={`${isMobile ? 'w-full' : 'ml-4'}`}>
+              <Button 
+                onClick={handleJoinLeave}
+                disabled={isJoining || isLeaving}
+                variant={communityWithStats?.is_member ? "outline" : "default"}
+                className={`${isMobile ? 'w-full' : ''}`}
+              >
+                {isJoining || isLeaving ? 'Caricamento...' : 
+                 communityWithStats?.is_member ? 'Lascia' : 'Unisciti'}
+              </Button>
+            </div>
           </div>
         </div>
       </div>

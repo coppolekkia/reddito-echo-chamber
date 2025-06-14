@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
@@ -11,6 +10,8 @@ export interface CommunityWithStats {
   description: string | null;
   creator_id: string | null;
   created_at: string;
+  cover_image_url: string | null;
+  logo_url: string | null;
   member_count?: number;
   post_count?: number;
   is_member?: boolean;

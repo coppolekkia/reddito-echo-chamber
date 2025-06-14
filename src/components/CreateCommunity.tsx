@@ -10,7 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Users, Hash } from 'lucide-react';
+import { ArrowLeft, Users, Hash, Upload, X } from 'lucide-react';
 
 export const CreateCommunity = () => {
   const { user } = useAuth();
@@ -18,6 +18,8 @@ export const CreateCommunity = () => {
   const queryClient = useQueryClient();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [coverImageUrl, setCoverImageUrl] = useState('');
+  const [logoUrl, setLogoUrl] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -65,7 +67,9 @@ export const CreateCommunity = () => {
         .insert({
           name: name.toLowerCase(),
           description: description.trim() || null,
-          creator_id: user.id
+          creator_id: user.id,
+          cover_image_url: coverImageUrl.trim() || null,
+          logo_url: logoUrl.trim() || null
         })
         .select()
         .single();
@@ -80,6 +84,8 @@ export const CreateCommunity = () => {
       
       setName('');
       setDescription('');
+      setCoverImageUrl('');
+      setLogoUrl('');
       
       // Naviga alla home page
       navigate('/');
@@ -168,6 +174,82 @@ export const CreateCommunity = () => {
               <span className="text-sm text-gray-400">
                 {description.length}/500
               </span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-6">
+            <div>
+              <Label htmlFor="cover-image" className="text-base font-medium flex items-center gap-2">
+                <Upload className="h-4 w-4" />
+                Immagine di copertina (opzionale)
+              </Label>
+              <Input
+                id="cover-image"
+                type="url"
+                value={coverImageUrl}
+                onChange={(e) => setCoverImageUrl(e.target.value)}
+                placeholder="https://esempio.com/immagine-copertina.jpg"
+                className="mt-2"
+              />
+              <p className="text-sm text-gray-500 mt-1">
+                URL dell'immagine di copertina (formato: JPG, PNG, GIF)
+              </p>
+              {coverImageUrl && (
+                <div className="mt-2 relative">
+                  <img 
+                    src={coverImageUrl} 
+                    alt="Anteprima copertina" 
+                    className="w-full h-32 object-cover rounded-lg border"
+                    onError={() => setCoverImageUrl('')}
+                  />
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    className="absolute top-2 right-2"
+                    onClick={() => setCoverImageUrl('')}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              )}
+            </div>
+
+            <div>
+              <Label htmlFor="logo" className="text-base font-medium flex items-center gap-2">
+                <Upload className="h-4 w-4" />
+                Logo della comunità (opzionale)
+              </Label>
+              <Input
+                id="logo"
+                type="url"
+                value={logoUrl}
+                onChange={(e) => setLogoUrl(e.target.value)}
+                placeholder="https://esempio.com/logo.png"
+                className="mt-2"
+              />
+              <p className="text-sm text-gray-500 mt-1">
+                URL del logo della comunità (formato: PNG, JPG, SVG)
+              </p>
+              {logoUrl && (
+                <div className="mt-2 relative inline-block">
+                  <img 
+                    src={logoUrl} 
+                    alt="Anteprima logo" 
+                    className="w-16 h-16 object-cover rounded-full border-2 border-gray-200"
+                    onError={() => setLogoUrl('')}
+                  />
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    className="absolute -top-1 -right-1 w-6 h-6 rounded-full p-0"
+                    onClick={() => setLogoUrl('')}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
 

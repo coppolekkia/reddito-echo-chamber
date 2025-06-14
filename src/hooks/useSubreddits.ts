@@ -8,6 +8,8 @@ export interface Subreddit {
   description: string | null;
   creator_id: string | null;
   created_at: string;
+  cover_image_url: string | null;
+  logo_url: string | null;
 }
 
 export const useSubreddits = () => {
