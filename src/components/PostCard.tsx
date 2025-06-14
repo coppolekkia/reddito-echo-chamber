@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -51,7 +50,7 @@ export const PostCard = ({
   };
 
   const handleShare = async () => {
-    const postUrl = `${window.location.origin}/post/${id}`;
+    const postUrl = `${window.location.protocol}//${window.location.host}/post/${id}`;
     const shareData = {
       title: `${title} - r/${subreddit}`,
       text: content ? content.substring(0, 100) + '...' : `Post di u/${author} in r/${subreddit}`,

@@ -43,6 +43,14 @@ export const MetaTags = ({
       meta.setAttribute('content', content);
     };
 
+    // Clear any existing meta tags first to avoid conflicts
+    const metaTagsToUpdate = [
+      'description',
+      'og:title', 'og:description', 'og:image', 'og:image:alt', 'og:url', 'og:type', 'og:site_name', 'og:locale', 'og:image:width', 'og:image:height',
+      'twitter:card', 'twitter:title', 'twitter:description', 'twitter:image', 'twitter:image:alt', 'twitter:site', 'twitter:creator',
+      'article:author', 'robots', 'viewport'
+    ];
+
     // Update basic meta tags
     updateMetaTag('description', description, false);
 
@@ -77,6 +85,24 @@ export const MetaTags = ({
     // Add additional meta tags for better SEO and social sharing
     updateMetaTag('robots', 'index, follow', false);
     updateMetaTag('viewport', 'width=device-width, initial-scale=1.0', false);
+
+    // Force update of canonical URL
+    let canonicalLink = document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
+    if (!canonicalLink) {
+      canonicalLink = document.createElement('link');
+      canonicalLink.setAttribute('rel', 'canonical');
+      document.head.appendChild(canonicalLink);
+    }
+    canonicalLink.setAttribute('href', url);
+
+    // Log meta tags for debugging
+    console.log('Meta tags updated:', {
+      title,
+      description,
+      image,
+      url,
+      type
+    });
 
     // Cleanup function to reset to defaults when component unmounts
     return () => {

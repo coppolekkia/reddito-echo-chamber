@@ -47,7 +47,7 @@ export default function SinglePost() {
     post.content.substring(0, 160).replace(/<[^>]*>/g, '') + (post.content.length > 160 ? '...' : '') : 
     `Post condiviso da u/${post.profiles.username} nella comunità r/${post.subreddits.name}`;
   const postImage = post.image_url || 'https://lovable.dev/opengraph-image-p98pqg.png';
-  const postUrl = `${window.location.origin}/post/${post.id}`;
+  const postUrl = `${window.location.protocol}//${window.location.host}/post/${post.id}`;
   const imageAlt = post.image_url ? `Immagine del post: ${post.title}` : 'Coppolek - Social sharing image';
 
   return (
